@@ -1,0 +1,41 @@
+{
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/alexanderniebuhr/sveasy/issues"
+  },
+  "peerDependencies": {
+    "esbuild": "^0.11.5",
+    "svelte": "^3.35.0"
+  },
+  "dependencies": {
+    "esbuild": "^0.11.5",
+    "svelte": "^3.35.0"
+  },
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^14.14.37",
+    "sucrase": "^3.17.1",
+    "typescript": "^4.2.3"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "homepage": "https://github.com/alexanderniebuhr/sveasy#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "bin": "bin/sveasy.js",
+  "name": "sveasy",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
+  },
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --outfile=lib/index.js --platform=node --target=node14 --external:esbuild --format=cjs",
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.1.15",
+  "engines": {
+    "node": "14.x"
+  }
+}
