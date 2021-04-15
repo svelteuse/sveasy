@@ -34,7 +34,7 @@
     "dev": "npm run build -- --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.1.16",
+  "version": "0.1.17",
   "engines": {
     "node": ">13.x"
   }
