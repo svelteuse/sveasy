@@ -29,7 +29,6 @@
     "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
   },
   "scripts": {
-    "preinstall": "npx -y only-allow npm",
     "prepublishOnly": "rimraf dist && npm run build",
     "build": "tsup src/index.ts --dts --format esm,cjs --minify --out-dir lib",
     "dev": "npm run build -- --watch",
