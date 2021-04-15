@@ -3,18 +3,14 @@ import { build, serve } from 'esbuild'
 import { svelte } from './plugins'
 import { resolve, join } from 'path'
 import { pathToFileURL } from "url";
+import { useConfig } from "@nbhr/utils";
 
 export const builder = async () => {
-  let extractedPreprocess
-  if (existsSync(join(process.cwd(), 'svelte.config.js'))) {
-    // @ts-expect-error
-    const { preprocess } = await import(pathToFileURL(resolve('svelte.config.js'))).catch(err => { console.error(err) })
-    extractedPreprocess = preprocess
-  } else if (existsSync(join(process.cwd(), 'svelte.config.cjs'))) {
-    // @ts-expect-error
-    const { preprocess } = await import(pathToFileURL(resolve('svelte.config.cjs'))).catch(err => { console.error(err) })
-    extractedPreprocess = preprocess
-  }
+  // glob svelte.config.{js,cjs,mjs}
+  let config = await useConfig.load("svelte.config.js")
+  let extractedPreprocess = config.preprocess
+
+
   // make sure the directory exists before stuff gets put into into
   if (!existsSync('./dist/')) {
     mkdirSync('./dist/')
@@ -37,9 +33,7 @@ export const builder = async () => {
     ]
   })
     .then((result) => {
-      if (process.env.NODE_ENV === 'production') {
-        process.exit(0)
-      }
+      process.exit(0)
     })
     .catch((err) => {
       console.error(err)
@@ -70,16 +64,8 @@ export const builder = async () => {
   }
 }
 export const server = async () => {
-  let extractedPreprocess
-  if (existsSync(join(process.cwd(), 'svelte.config.js'))) {
-    // @ts-expect-error
-    const { preprocess } = await import(pathToFileURL(resolve('svelte.config.js'))).catch(err => { console.error(err) })
-    extractedPreprocess = preprocess
-  } else if (existsSync(join(process.cwd(), 'svelte.config.cjs'))) {
-    // @ts-expect-error
-    const { preprocess } = await import(pathToFileURL(resolve('svelte.config.cjs'))).catch(err => { console.error(err) })
-    extractedPreprocess = preprocess
-  }
+  let config = await useConfig.load("svelte.config.js")
+  let extractedPreprocess = config.preprocess
 
   serve(
     {
