@@ -4,14 +4,14 @@
     "url": "https://github.com/alexanderniebuhr/sveasy/issues"
   },
   "dependencies": {
-    "esbuild": "^0.11.5",
-    "svelte": "^3.35.0"
+    "esbuild": "^0.11.11"
   },
   "description": "",
   "devDependencies": {
     "@nbhr/utils": "0.0.16",
     "@types/node": "*",
     "rimraf": "*",
+    "svelte": "^3.37.0",
     "ts-standard": "*",
     "tsup": "*",
     "typescript": "*"
