@@ -1,5 +1,5 @@
 {
-  "author": "",
+  "author": "Alexander Niebuhr",
   "bugs": {
     "url": "https://github.com/alexanderniebuhr/sveasy/issues"
   },
@@ -24,6 +24,10 @@
   "bin": "bin/sveasy.js",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
+  "exports": {
+    "require": "./lib/index.js",
+    "import": "./lib/index.mjs"
+  },
   "name": "sveasy",
   "repository": {
     "type": "git",
