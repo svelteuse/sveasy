@@ -1,9 +1,9 @@
-import { copyFile, existsSync, mkdirSync } from 'fs'
-import { build, serve } from 'esbuild'
-import { svelte } from './plugins'
-import { resolve, join } from 'path'
-import { pathToFileURL } from "url";
 import { useConfig } from "@nbhr/utils";
+import { build, serve } from 'esbuild';
+import { copyFile, existsSync, mkdirSync } from 'fs';
+import { readdir } from "fs/promises";
+import { join } from "path";
+import { svelte } from './plugins';
 
 export const builder = async () => {
   // glob svelte.config.{js,cjs,mjs}
@@ -42,22 +42,13 @@ export const builder = async () => {
 
   // use a basic html file to test with
   try {
-    copyFile('./public/index.html', './dist/index.html', (err) => {
-      if (err) throw err
-    })
-  } catch (error) {
-
-  }
-  try {
-    copyFile('./public/favicon.ico', './dist/favicon.ico', (err) => {
-      if (err) throw err
-    })
-  } catch (error) {
-
-  }
-  try {
-    copyFile('./public/robots.txt', './dist/robots.txt', (err) => {
-      if (err) throw err
+    let files = await readdir("public")
+    files.forEach(file => {
+      copyFile(join("public",file), join("dist", file),(err) => {
+        if (err) {
+          throw err
+        }
+      })
     })
   } catch (error) {
 

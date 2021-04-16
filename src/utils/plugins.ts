@@ -1,6 +1,6 @@
-import { compile, preprocess } from 'svelte/compiler'
-import { statSync, promises } from 'fs'
+import { promises, statSync } from 'fs'
 import { relative } from 'path'
+import { compile, preprocess } from 'svelte/compiler'
 
 export const svelte = (options: any) => {
   return {
