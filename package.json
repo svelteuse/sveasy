@@ -11,7 +11,7 @@
     "url": "https://github.com/alexanderniebuhr/sveasy/issues"
   },
   "license": "ISC",
-  "bin": "bin/sveasy.js",
+  "bin": "bin/sveasy.mjs",
   "main": "lib/index.mjs",
   "exports": {
     "import": "./lib/index.mjs"
