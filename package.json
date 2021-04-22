@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "prepublishOnly": "rimraf dist && npm run build",
-    "build": "tsup src/index.ts --dts --format esm --minify --out-dir lib",
+    "build": "tsup src/index.ts --dts --format esm --out-dir lib",
     "dev": "npm run build -- --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,7 +30,7 @@
     "esbuild": "^0.11.12"
   },
   "devDependencies": {
-    "@nbhr/utils": "^0.0.16",
+    "@nbhr/utils": "^0.0.18",
     "@types/node": "*",
     "rimraf": "*",
     "svelte": "^3.37.0",
