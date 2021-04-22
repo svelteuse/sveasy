@@ -1,14 +1,36 @@
 {
+  "name": "sveasy",
+  "version": "0.2.1",
+  "homepage": "https://github.com/alexanderniebuhr/sveasy#readme",
   "author": "Alexander Niebuhr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
+  },
   "bugs": {
     "url": "https://github.com/alexanderniebuhr/sveasy/issues"
   },
-  "dependencies": {
-    "esbuild": "^0.11.11"
+  "license": "ISC",
+  "bin": "bin/sveasy.js",
+  "main": "lib/index.mjs",
+  "exports": {
+    "import": "./lib/index.mjs"
   },
-  "description": "",
+  "files": [
+    "lib/**/*",
+    "bin/**/*"
+  ],
+  "scripts": {
+    "prepublishOnly": "rimraf dist && npm run build",
+    "build": "tsup src/index.ts --dts --format esm --minify --out-dir lib",
+    "dev": "npm run build -- --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "esbuild": "^0.11.12"
+  },
   "devDependencies": {
-    "@nbhr/utils": "0.0.16",
+    "@nbhr/utils": "^0.0.16",
     "@types/node": "*",
     "rimraf": "*",
     "svelte": "^3.37.0",
@@ -16,30 +38,6 @@
     "tsup": "*",
     "typescript": "*"
   },
-  "files": [
-    "lib/**/*"
-  ],
-  "homepage": "https://github.com/alexanderniebuhr/sveasy#readme",
-  "license": "ISC",
-  "bin": "bin/sveasy.js",
-  "main": "lib/index.js",
-  "module": "lib/index.mjs",
-  "exports": {
-    "require": "./lib/index.js",
-    "import": "./lib/index.mjs"
-  },
-  "name": "sveasy",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
-  },
-  "scripts": {
-    "prepublishOnly": "rimraf dist && npm run build",
-    "build": "tsup src/index.ts --dts --format esm,cjs --minify --out-dir lib",
-    "dev": "npm run build -- --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "0.2.1",
   "engines": {
     "node": ">13.x"
   }
