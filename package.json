@@ -27,13 +27,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "esbuild": "^0.11.12"
+    "esbuild": "0.11.15"
   },
   "devDependencies": {
-    "@nbhr/utils": "^0.0.18",
+    "@nbhr/utils": "0.0.19",
     "@types/node": "*",
     "rimraf": "*",
-    "svelte": "^3.37.0",
+    "svelte": "3.37.0",
     "ts-standard": "*",
     "tsup": "*",
     "typescript": "*"
