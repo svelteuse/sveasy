@@ -1,15 +1,15 @@
-import { useConfig } from "@nbhr/utils";
-import { build, serve } from 'esbuild';
-import { copyFile, existsSync, mkdirSync } from 'fs';
-import { readdir } from "fs/promises";
-import { join } from "path";
-import { svelte } from './plugins';
+import { useConfig } from '@nbhr/utils'
+import { build, serve } from 'esbuild'
+import { copyFile, existsSync, mkdirSync, rmSync } from 'fs'
+import { readdir } from 'fs/promises'
+import { createServer, request } from 'http'
+import { join } from 'path'
+import { svelte } from './plugins'
 
-export const builder = async () => {
+export const builder = async (): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
-  let config = await useConfig.load("svelte.config.js")
-  let extractedPreprocess = config.preprocess
-
+  const config = await useConfig.load('svelte.config.js')
+  const extractedPreprocess = config.preprocess
 
   // make sure the directory exists before stuff gets put into into
   if (!existsSync('./dist/')) {
@@ -22,8 +22,6 @@ export const builder = async () => {
     format: 'esm',
     minify: true,
     bundle: true,
-    splitting: true,
-    incremental: true,
     plugins: [
       svelte({
         cache: false,
@@ -42,10 +40,10 @@ export const builder = async () => {
 
   // use a basic html file to test with
   try {
-    let files = await readdir("public")
+    const files = await readdir('public')
     files.forEach(file => {
-      copyFile(join("public",file), join("dist", file),(err) => {
-        if (err) {
+      copyFile(join('public', file), join('dist', file), (err) => {
+        if (err != null) {
           throw err
         }
       })
@@ -54,41 +52,88 @@ export const builder = async () => {
 
   }
 }
-export const server = async () => {
-  let config = await useConfig.load("svelte.config.js")
-  let extractedPreprocess = config.preprocess
+export const server = async (): Promise<void> => {
+  const config = await useConfig.load('svelte.config.js')
+  const extractedPreprocess = config.preprocess
 
-  serve(
-    {
-      servedir: 'public',
-      port: 8080,
-      host: '0.0.0.0'
-    },
-    {
-      entryPoints: ['src/index.js'],
-      outdir: 'public',
-      format: 'esm',
-      // minify: true,
-      bundle: true,
-      // splitting: true,
-      // incremental: true,
-      plugins: [
-        svelte({
-          cache: false,
-          compileOptions: { css: false },
-          preprocess: extractedPreprocess
-        })
-      ]
+  try {
+    // make sure the directory exists before stuff gets put into into
+    if (!existsSync('.sveasy')) {
+      mkdirSync('.sveasy')
     }
-  )
-    .then((server) => {
-      console.log(server)
-      process.on('SIGINT', function () {
-        server.stop()
+    const files = await readdir('public')
+    files.forEach(file => {
+      copyFile(join('public', file), join('.sveasy', file), (err) => {
+        if (err != null) {
+          throw err
+        }
       })
     })
-    .catch((err) => {
-      console.error(err)
-      process.exit(1)
+  } catch (error) {
+
+  }
+
+  const clients: any = []
+  build({
+    entryPoints: ['src/index.js'],
+    bundle: true,
+    incremental: true,
+    outdir: './.sveasy',
+    banner: { js: ' (() => new EventSource("/esbuild").onmessage = (e) => location.reload())();' },
+    watch: {
+      onRebuild (error, result) {
+        if (error != null) console.error('watch build failed:', error)
+        clients.forEach((res: any) => res.write('data: update\n\n'))
+        clients.length = 0
+      }
+    },
+    plugins: [
+      svelte({
+        cache: false,
+        compileOptions: { css: false },
+        preprocess: extractedPreprocess
+      })
+    ]
+  }).catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+
+  serve({ servedir: '.sveasy' }, {}).then((result) => {
+    const { host, port } = result
+    createServer((req, res) => {
+      const { url, method, headers } = req
+      // TODO: UNDERSTAND
+      if (req.url === '/esbuild') {
+        return clients.push(
+          res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            Connection: 'keep-alive'
+          })
+        )
+      }
+      const path = url
+      req.pipe(
+        request({ hostname: '0.0.0.0', port: port, path, method, headers }, (prxRes) => {
+          if (prxRes.statusCode !== undefined) {
+            res.writeHead(prxRes.statusCode, prxRes.headers)
+            prxRes.pipe(res, { end: true })
+          }
+        }),
+        { end: true }
+      )
+    }).listen(8080)
+    process.on('SIGINT', function () {
+      rmSync('.sveasy', { recursive: true })
+      process.exit()
+      // clients.length = 0
+      // result.stop()
+      // setTimeout(() => {
+      // }, 500)
     })
+  }).catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
 }
