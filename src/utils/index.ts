@@ -1,7 +1,6 @@
 import { useConfig } from '@nbhr/utils'
 import { build, serve } from 'esbuild'
-import { copyFile, existsSync, mkdirSync, rmSync } from 'fs'
-import { readdir } from 'fs/promises'
+import { copyFile, existsSync, mkdirSync, rmSync, promises } from 'fs'
 import { createServer, request } from 'http'
 import { join } from 'path'
 import { svelte } from './plugins'
@@ -40,7 +39,7 @@ export const builder = async (): Promise<void> => {
 
   // use a basic html file to test with
   try {
-    const files = await readdir('public')
+    const files = await promises.readdir('public')
     files.forEach(file => {
       copyFile(join('public', file), join('dist', file), (err) => {
         if (err != null) {
@@ -61,7 +60,7 @@ export const server = async (): Promise<void> => {
     if (!existsSync('.sveasy')) {
       mkdirSync('.sveasy')
     }
-    const files = await readdir('public')
+    const files = await promises.readdir('public')
     files.forEach(file => {
       copyFile(join('public', file), join('.sveasy', file), (err) => {
         if (err != null) {
