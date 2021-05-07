@@ -11,18 +11,15 @@
     "url": "https://github.com/alexanderniebuhr/sveasy/issues"
   },
   "license": "ISC",
-  "bin": "bin/sveasy.mjs",
-  "main": "lib/index.mjs",
-  "exports": {
-    "import": "./lib/index.mjs"
-  },
+  "bin": "bin/sveasy.js",
+  "main": "lib/index.js",
   "files": [
     "lib/**/*",
     "bin/**/*"
   ],
   "scripts": {
     "prepublishOnly": "rimraf dist && npm run build",
-    "build": "tsup src/index.ts --dts --format esm,cjs --out-dir lib",
+    "build": "tsup src/index.ts --dts --format cjs --out-dir lib",
     "dev": "npm run build -- --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
