@@ -40,10 +40,10 @@ export const svelte = (options?: pluginOptions): Plugin => {
     setup (build) {
       let cache = false
       if (build.initialOptions.incremental != null || build.initialOptions.watch != null) {
-        console.log('cache')
+        // console.log('cache')
         cache = true
       } else {
-        console.log('noCache')
+        // console.log('noCache')
       }
 
       const cacheMap = new Map<string, {data: OnLoadResult, time: Date}>()
@@ -81,7 +81,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
                 toString: () => string
                 toUrl: () => string
               }
-            }
+            } | null
             warnings: Warning[]
           } = compile(source, {
             ...compileOptions,
@@ -89,7 +89,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
           })
           let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
-          if (!compileOptions.css && css.code !== '') {
+          if (!compileOptions.css && css !== null) {
             const path = args.path.replace(/\.svelte$/, '.svelte.css').replace(/\\/g, '/')
             cssMap.set(path, css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
             contents = contents + `\nimport "${path}";`
