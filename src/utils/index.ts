@@ -109,7 +109,6 @@ export const server = async (): Promise<void> => {
     },
     plugins: [
       svelte({
-        cache: false,
         compileOptions: { css: false },
         preprocess: extractedPreprocess
       })
@@ -125,7 +124,7 @@ export const server = async (): Promise<void> => {
     servedir: '.sveasy'
   }, {})
     .then((result) => {
-      const { host, port } = result
+      const { port } = result
       createServer((req, res) => {
         const { url, method, headers } = req
         // TODO: UNDERSTAND

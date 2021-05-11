@@ -80,7 +80,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
               map: {
                 toString: () => string
                 toUrl: () => string
-              }
+              } | null
             } | null
             warnings: Warning[]
           } = compile(source, {
@@ -89,7 +89,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
           })
           let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
-          if (!compileOptions.css && css !== null) {
+          if (!compileOptions.css && css !== null && css.map !== null) {
             const path = args.path.replace(/\.svelte$/, '.svelte.css').replace(/\\/g, '/')
             cssMap.set(path, css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
             contents = contents + `\nimport "${path}";`
