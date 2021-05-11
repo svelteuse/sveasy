@@ -1,24 +1,59 @@
+import type { OnLoadResult, PartialMessage, Plugin } from 'esbuild'
 import { promises, statSync } from 'fs'
 import { relative } from 'path'
 import { compile, preprocess } from 'svelte/compiler'
+import type { CompileOptions, Warning } from 'svelte/types/compiler/interfaces'
+import { PreprocessorGroup } from 'svelte/types/compiler/preprocess/types'
 
-export const svelte = (options: any) => {
+function formatMessage ({ message, start, end, filename, frame }: Warning): PartialMessage {
+  let location
+  if ((start != null) && (end != null)) {
+    const tmp = (frame !== undefined) ? frame.length : 0
+    const lineEnd = start.line === end.line ? end.column : tmp
+    location = {
+      file: filename,
+      line: start.line,
+      column: start.column,
+      length: lineEnd - start.column,
+      lineText: frame
+    }
+  }
+  return { text: message, location }
+}
+
+interface pluginOptions {
+  /**
+   * Svelte compiler options
+   */
+  compileOptions?: CompileOptions
+
+  /**
+   * The preprocessor(s) to run the Svelte code through before compiling
+   */
+  preprocess?: PreprocessorGroup | PreprocessorGroup[]
+
+}
+
+export const svelte = (options?: pluginOptions): Plugin => {
   return {
-    name: 'sveasy-svelte-plugin',
-    setup(build: any) {
-      // Store generated css code for use in fake import
-      const cssCode = new Map()
-      const fileCache = new Map()
+    name: 'svelte',
+    setup (build) {
+      let cache = false
+      if (build.initialOptions.incremental != null || build.initialOptions.watch != null) {
+        console.log('cache')
+        cache = true
+      } else {
+        console.log('noCache')
+      }
 
-      // main loader
-      build.onLoad({ filter: /\.svelte$/ }, async (args: any) => {
-        // if told to use the cache, check if it contains the file,
-        // and if the modified time is not greater than the time when it was cached
-        // if so, return the cached data
-        if (options?.cache === true && fileCache.has(args.path)) {
-          const cachedFile = fileCache.get(args.path)
-          if (cachedFile && statSync(args.path).mtime < cachedFile.time) {
-            return cachedFile.data
+      const cacheMap = new Map<string, {data: OnLoadResult, time: Date}>()
+      const cssMap = new Map<string, string>()
+
+      build.onLoad({ filter: /\.svelte$/ }, async (args) => {
+        if (cache && cacheMap.has(args.path)) {
+          const file = cacheMap.get(args.path)
+          if ((file != null) && statSync(args.path).mtime < file.time) {
+            return file.data
           }
         }
 
@@ -26,68 +61,60 @@ export const svelte = (options: any) => {
         const filename = relative(process.cwd(), args.path)
 
         try {
-          if (options?.preprocess) {
-            source = (
-              await preprocess(source, options.preprocess, { filename })
-            ).code
+          if ((options?.preprocess) != null) {
+            source = (await preprocess(source, options.preprocess, { filename })).code
           }
 
-          const compileOptions = { css: false, ...options?.compileOptions }
+          const compileOptions = { css: false, ...(options?.compileOptions) }
 
-          const { js, css, warnings } = compile(source, {
+          const { js, css, warnings }: {
+            js: {
+              code: string
+              map: {
+                toString: () => string
+                toUrl: () => string
+              }
+            }
+            css: {
+              code: string
+              map: {
+                toString: () => string
+                toUrl: () => string
+              }
+            }
+            warnings: Warning[]
+          } = compile(source, {
             ...compileOptions,
-            filename
+            filename: filename
           })
-          let contents = js.code + '\n//# sourceMappingURL=' + js.map.toUrl()
+          let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
-          // if svelte emits css seperately, then store it in a map and import it from the js
-          if (!compileOptions.css && css.code) {
-            const cssPath = args.path
-              .replace('.svelte', '.esbuild-svelte-fake-css')
-              .replace(/\\/g, '/')
-            cssCode.set(
-              cssPath,
-              css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`
-            )
-            contents = contents + `\nimport "${cssPath}";`
+          if (!compileOptions.css && css.code !== '') {
+            const path = args.path.replace(/\.svelte$/, '.svelte.css').replace(/\\/g, '/')
+            cssMap.set(path, css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
+            contents = contents + `\nimport "${path}";`
           }
 
-          const result = {
-            contents: contents,
-            warnings: warnings.map(convertWarningFormat)
-          }
+          const data = { contents, warnings: warnings.map(formatMessage) }
 
-          // if we are told to cache, then cache
-          if (options?.cache === true) {
-            fileCache.set(args.path, { data: result, time: new Date() })
+          if (cache) {
+            cacheMap.set(args.path, { data, time: new Date() })
           }
-          return result
+          return { contents, warnings: warnings.map(formatMessage) }
         } catch (e) {
-          return [convertWarningFormat(e)]
+          return { errors: [formatMessage(e)] }
         }
       })
 
       // if the css exists in our map, then output it with the css loader
-      build.onResolve({ filter: /\.esbuild-svelte-fake-css$/ }, (args: any) => {
-        return { path: args.path, namespace: 'fakecss' }
+      build.onResolve({ filter: /\.svelte.css$/ }, (args) => {
+        return { path: args.path, namespace: 'svelte-css' }
       })
 
-      build.onLoad({ filter: /\.esbuild-svelte-fake-css$/, namespace: 'fakecss' }, (args: any) => {
-        const css = cssCode.get(args.path)
-        return css ? { contents: css, loader: 'css' } : null
+      build.onLoad({ filter: /\.svelte.css$/, namespace: 'svelte-css' }, (args) => {
+        const css = cssMap.get(args.path)
+        return (css !== null) ? { contents: css, loader: 'css' } : null
       })
     }
   }
 }
-
-const convertWarningFormat = ({ message, start, end, filename, frame }: any) => ({
-  text: message,
-  location: start &&
-    end && {
-    file: filename,
-    line: start.line,
-    column: start.column,
-    length: start.line === end.line ? end.column - start.column : 0,
-    lineText: frame
-  }
-})

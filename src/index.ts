@@ -1,6 +1,6 @@
 import { builder, server } from './utils/index'
 
-export const main = () => {
+export const main = (): void => {
   const argv = process.argv.slice(2)
   console.log(argv)
   if (!argv[0]) throw new Error('invalid arguments')
