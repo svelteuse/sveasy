@@ -19,7 +19,7 @@ export const builder = async (): Promise<void> => {
     bundle: true,
     entryPoints: ['src/index.js'],
     format: 'esm',
-    minify: false,
+    minify: true,
     outdir: './dist',
     splitting: true,
     target: [
@@ -109,7 +109,7 @@ export const server = async (): Promise<void> => {
     },
     plugins: [
       svelte({
-        compileOptions: { css: false },
+        compileOptions: { css: false, dev: true },
         preprocess: extractedPreprocess
       })
     ]

@@ -24,16 +24,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "esbuild": "0.11.15"
+    "esbuild": "0.11.20"
   },
   "devDependencies": {
     "@nbhr/utils": "0.0.19",
-    "@types/node": "*",
-    "rimraf": "*",
-    "svelte": "3.37.0",
-    "ts-standard": "*",
-    "tsup": "*",
-    "typescript": "*"
+    "@types/node": "15.0.2",
+    "rimraf": "3.0.2",
+    "svelte": "3.38.2",
+    "ts-standard": "10.0.0",
+    "tsup": "4.10.1",
+    "typescript": "4.2.4"
   },
   "engines": {
     "node": ">13.x"
