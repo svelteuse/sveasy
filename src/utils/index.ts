@@ -1,7 +1,7 @@
 import { useConfig } from '@nbhr/utils'
 import { build, serve } from 'esbuild'
 import { copyFile, existsSync, mkdirSync, promises, readFile, rmSync } from 'fs'
-import { createServer, request } from 'http'
+import { createServer, request, ServerResponse } from 'http'
 import { join } from 'path'
 import { svelte } from './plugins'
 
@@ -86,7 +86,7 @@ export const server = async (): Promise<void> => {
 
   }
 
-  const clients: any = []
+  const clients: ServerResponse[] = []
   build({
     target: [
       'chrome78',
@@ -103,7 +103,7 @@ export const server = async (): Promise<void> => {
     watch: {
       onRebuild (error, result) {
         if (error != null) console.error('watch build failed:', error)
-        clients.forEach((res: any) => res.write('data: update\n\n'))
+        clients.forEach(res => res.write('data: update\n\n'))
         clients.length = 0
       }
     },
