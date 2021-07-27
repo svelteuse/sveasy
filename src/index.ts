@@ -1,4 +1,4 @@
-import { builder, server } from './utils/index'
+import { builder, server } from './utils/index';
 
 export const main = (): void => {
   const argv = process.argv.slice(2)
@@ -10,7 +10,10 @@ export const main = (): void => {
     server()
   } else if (argv[0] === 'build') {
     console.log('building in prod mode')
-    builder()
+    if(argv[1] && argv[1] === '--wc'){
+      builder({write: false})
+    }
+    builder({write: true})
   } else {
     throw new Error('unexpected error')
   }

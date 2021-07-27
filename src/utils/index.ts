@@ -5,7 +5,7 @@ import { createServer, request, ServerResponse } from 'http'
 import { join } from 'path'
 import { svelte } from './plugins'
 
-export const builder = async (): Promise<void> => {
+export const builder = async (options: {write: boolean}): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
   const config = await useConfig.load('svelte.config.js')
   const extractedPreprocess = config.preprocess
@@ -19,7 +19,7 @@ export const builder = async (): Promise<void> => {
     bundle: true,
     entryPoints: ['src/index.js'],
     format: 'esm',
-    minify: true,
+    minify: false,
     outdir: './dist',
     splitting: true,
     target: [
@@ -28,7 +28,7 @@ export const builder = async (): Promise<void> => {
       'safari11',
       'edge79'
     ],
-    write: true,
+    write: options.write,
     // advanced
     color: true,
     incremental: false,
