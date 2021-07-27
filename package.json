@@ -12,14 +12,31 @@
   },
   "license": "ISC",
   "bin": "bin/sveasy.js",
-  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "require": "./lib/index.js",
+      "import": "./lib/index.mjs"
+    },
+    "./browser": {
+      "require": "./lib/browser/browser.js",
+      "import": "./lib/browser/browser.mjs"
+    }
+  },
+  "types": "./lib/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "node": [
+        "./lib/browser.d.ts"
+      ]
+    }
+  },
   "files": [
     "lib/**/*",
     "bin/**/*"
   ],
   "scripts": {
     "prepublishOnly": "rimraf dist && npm run build",
-    "build": "tsup src/index.ts --dts --format cjs --out-dir lib",
+    "build": "tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir lib",
     "dev": "npm run build -- --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
