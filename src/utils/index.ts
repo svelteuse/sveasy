@@ -1,6 +1,6 @@
 import { useConfig } from '@nbhr/utils'
-import { build, serve } from 'esbuild'
-import { copyFile, existsSync, mkdirSync, promises, readFile, rmSync } from 'fs'
+import { build, serve, transformSync } from 'esbuild'
+import { copyFile, existsSync, mkdirSync, promises, readFile, rmSync, writeFileSync } from 'fs'
 import { createServer, request, ServerResponse } from 'http'
 import { join } from 'path'
 import { svelte } from './plugins'
@@ -42,26 +42,93 @@ export const builder = async (options: {write: boolean}): Promise<void> => {
       })
     ]
   })
-    .then(async (_result) => {
-      process.exit(0)
-    })
-    .catch((err) => {
-      console.error(err)
-      process.exit(1)
-    })
-
-  try {
-    const files = await promises.readdir('public')
-    files.forEach(file => {
-      copyFile(join('public', file), join('dist', file), (err) => {
-        if (err != null) {
-          throw err
+  .then(async (result) => {
+    console.log(result);
+    if (result.outputFiles && result.outputFiles.length > 0) {
+      let jsFile
+      let cssFile
+      for (const file of result.outputFiles) {
+        if (file.path.includes('index.js')) {
+          jsFile = file
+          // console.log(file.contents);
+          // console.log(file.text);
         }
-      })
-    })
-  } catch (error) {
+        if (file.path.includes('index.css')) {
+          cssFile = file
+          // console.log(file.contents);
+          // console.log(file.text);
+          let matches = [...file.text.matchAll(/(?<=((?<fileId>Button.svelte.css)\s\*\/))(.+:sveasy\s{.*?})?(?<css>.*?)\/\*/gis)]
+          // console.log(matches[0].groups);
+        }
 
-  }
+      }
+      if (jsFile && cssFile) {
+        let tmpText = jsFile.text
+        let tmpCss = cssFile.text + '\n/*'
+        let registerMatches = [...jsFile.text.matchAll(/register\((["|'|`])(?<tagName>[\w|-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["|'|`])(?<cssReplace>[\w|.|]+)\4/gi)]
+        for (const register of registerMatches) {
+          if (register.groups && register.groups.cssReplace) {
+            console.log(register.groups.cssReplace);
+            // let regex = new RegExp(`(?<=((?<fileId>${register.groups.cssReplace})\\s\\*\/))(.+:sveasy\\s{.*?})?(?<css>.*?)\/\\*`, 'gis')
+            let regex = new RegExp(`(?<=svelte-css)[\\w|:|/]+(?<fileId>${register.groups.cssReplace}).*?(:sveasy.*?{.*?"(?<files>[\\w|.|,]+?)?".*?})\n*(?<css>.+?)(?=\/\\*)`, 'gis')
+            console.log(regex);
+            let cssMatches = [...tmpCss.matchAll(regex)]
+            if (cssMatches && cssMatches.length > 0 && cssMatches[0].groups && cssMatches[0].groups.css) {
+              let finalCss = cssMatches[0].groups.css
+              if (cssMatches[0].groups.files) {
+                let files = cssMatches[0].groups.files.split(',')
+                console.log("Nested Files", files);
+                for (const file of files) {
+                  let nestedRegex = new RegExp(`(?<=svelte-css)[\\w|:|/]+(?<fileId>${file}.css).*?(:sveasy.*?{.*?"(?<files>[\\w|.|,]+?)?".*?})\n*(?<css>.+?)(?=\/\\*)`, 'gis')
+                  let nestedCSS = [...tmpCss.matchAll(nestedRegex)]
+                  if (nestedCSS && nestedCSS.length > 0 && nestedCSS[0].groups && nestedCSS[0].groups.css) {
+                    finalCss = finalCss + "\n" + nestedCSS[0].groups.css
+                  }
+                }
+              }
+              let minifiedCss = transformSync(finalCss, {
+                loader: 'css',
+                minify: false,
+              })
+              tmpText = tmpText.replace(`"${register.groups.cssReplace}"`, "`" + minifiedCss.code + "`" )
+            }
+          }          
+        }
+        writeFileSync(jsFile.path, tmpText, 'utf8')
+        // let cssBMatches = [...cssFile.text.matchAll(/(?<=((?<fileId>Button.svelte.css)\s\*\/))(.+:sveasy\s{.*?})?(?<css>.*?)\/\*/gis)]
+        // if (cssBMatches[0] && cssBMatches[0].groups) {
+        //   tmpText = jsFile.text.replace("\"Button.svelte.css\"","`"+ cssBMatches[0].groups.css + "`")
+        // }
+        // let cssPMatches = [...cssFile.text.matchAll(/(?<=((?<fileId>Pagination.svelte.css)\s\*\/))(.+:sveasy\s{.*?})?(?<css>.*?)$/gis)]
+        // if (cssPMatches[0] && cssPMatches[0].groups) {
+        //   tmpText = jsFile.text.replace("\"Pagination.svelte.css\"","`"+ cssPMatches[0].groups.css + "`")
+        // }
+        // writeFileSync(jsFile.path, tmpText, 'utf8')
+      }
+    }
+    
+    // try {
+    //   const files = await promises.readdir('public')
+    //   files.forEach(file => {
+    //     copyFile(join('public', file), join('dist', file), (err) => {
+    //       if (err != null) {
+    //         throw err
+    //       }
+    //       process.exit(0)
+    //     })
+    //   })
+    // } catch (error) {
+    //   console.error(error)
+    //   process.exit(1)
+    // }
+    
+  })
+  .catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+
+
 }
 
 // sveasy dev

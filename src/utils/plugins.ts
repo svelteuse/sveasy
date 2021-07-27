@@ -91,7 +91,8 @@ export const svelte = (options?: pluginOptions): Plugin => {
 
           if (!compileOptions.css && css !== null && css.map !== null) {
             const path = args.path.replace(/\.svelte$/, '.svelte.css').replace(/\\/g, '/')
-            cssMap.set(path, css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
+            let includedFiles = [...source.matchAll(/import.+?(?<file>\w+.svelte)/gi)]
+            cssMap.set(path, `:sveasy {--files: "${includedFiles.map(m => m.groups?.file).join(',')}";}\n` + css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
             contents = contents + `\nimport "${path}";`
           }
 
