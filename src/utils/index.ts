@@ -1,6 +1,6 @@
 import { useConfig } from '@nbhr/utils'
 import { build, serve, transformSync } from 'esbuild'
-import { copyFile, existsSync, mkdirSync, promises, readFile, rmSync, writeFileSync } from 'fs'
+import { copyFile, copyFileSync, existsSync, mkdirSync, promises, readdirSync, readFile, rmSync, writeFileSync } from 'fs'
 import { createServer, request, ServerResponse } from 'http'
 import { join } from 'path'
 import { svelte } from './plugins'
@@ -108,21 +108,17 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
         // writeFileSync(jsFile.path, tmpText, 'utf8')
       }
     }
+
+    try {
+      const files = readdirSync('public')
+      // console.log(files);
+      files.forEach(file => {
+        copyFileSync(`public/${file}`, `dist/${file}`)
+      })
+    } catch (error) {
+            console.log(error)
+    }
     
-    // try {
-    //   const files = await promises.readdir('public')
-    //   files.forEach(file => {
-    //     copyFile(join('public', file), join('dist', file), (err) => {
-    //       if (err != null) {
-    //         throw err
-    //       }
-    //       process.exit(0)
-    //     })
-    //   })
-    // } catch (error) {
-    //   console.error(error)
-    //   process.exit(1)
-    // }
     
   })
   .catch((error) => {
