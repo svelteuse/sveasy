@@ -72,7 +72,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
           if (register.groups && register.groups.cssReplace) {
             console.log(register.groups.cssReplace);
             // let regex = new RegExp(`(?<=((?<fileId>${register.groups.cssReplace})\\s\\*\/))(.+:sveasy\\s{.*?})?(?<css>.*?)\/\\*`, 'gis')
-            let regex = new RegExp(`(?<=svelte-css)[\\w|:|/]+(?<fileId>${register.groups.cssReplace}).*?(:sveasy.*?{.*?"(?<files>[\\w|.|,]+?)?".*?})\n*(?<css>.+?)(?=\/\\*)`, 'gis')
+            let regex = new RegExp(`(?<=svelte-css)[\\w|:|/|-]+(?<fileId>${register.groups.cssReplace}).*?(:sveasy.*?{.*?"(?<files>[\\w|.|,]+?)?".*?})\n*(?<css>.+?)(?=\/\\*)`, 'gis')
             console.log(regex);
             let cssMatches = [...tmpCss.matchAll(regex)]
             if (cssMatches && cssMatches.length > 0 && cssMatches[0].groups && cssMatches[0].groups.css) {
@@ -81,7 +81,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
                 let files = cssMatches[0].groups.files.split(',')
                 console.log("Nested Files", files);
                 for (const file of files) {
-                  let nestedRegex = new RegExp(`(?<=svelte-css)[\\w|:|/]+(?<fileId>${file}.css).*?(:sveasy.*?{.*?"(?<files>[\\w|.|,]+?)?".*?})\n*(?<css>.+?)(?=\/\\*)`, 'gis')
+                  let nestedRegex = new RegExp(`(?<=svelte-css)[\\w|:|/|-]+(?<fileId>${file}.css).*?(:sveasy.*?{.*?"(?<files>[\\w|.|,]+?)?".*?})\n*(?<css>.+?)(?=\/\\*)`, 'gis')
                   let nestedCSS = [...tmpCss.matchAll(nestedRegex)]
                   if (nestedCSS && nestedCSS.length > 0 && nestedCSS[0].groups && nestedCSS[0].groups.css) {
                     finalCss = finalCss + "\n" + nestedCSS[0].groups.css
