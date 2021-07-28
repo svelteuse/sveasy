@@ -5,7 +5,7 @@ import { createServer, request, ServerResponse } from 'http'
 import { join } from 'path'
 import { svelte } from './plugins'
 
-export const builder = async (options: {write: boolean}): Promise<void> => {
+export const builder = async (options: { write: boolean }): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
   const config = await useConfig.load('svelte.config.js')
   const extractedPreprocess = config.preprocess
@@ -14,6 +14,8 @@ export const builder = async (options: {write: boolean}): Promise<void> => {
   if (!existsSync('./dist/')) {
     mkdirSync('./dist/')
   }
+  console.log(options.write);
+  
   // build the application
   build({
     bundle: true,
@@ -88,7 +90,7 @@ export const builder = async (options: {write: boolean}): Promise<void> => {
               }
               let minifiedCss = transformSync(finalCss, {
                 loader: 'css',
-                minify: false,
+                minify: true,
               })
               tmpText = tmpText.replace(`"${register.groups.cssReplace}"`, "`" + minifiedCss.code + "`" )
             }
