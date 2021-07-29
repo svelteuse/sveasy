@@ -1,13 +1,13 @@
 import type { OnLoadResult, PartialMessage, Plugin } from 'esbuild'
-import { promises, statSync } from 'fs'
-import { relative } from 'path'
+import { promises, statSync } from 'node:fs'
+import { relative } from 'node:path'
 import { compile, preprocess } from 'svelte/compiler'
 import type { CompileOptions, Warning } from 'svelte/types/compiler/interfaces'
 import { PreprocessorGroup } from 'svelte/types/compiler/preprocess/types'
 
 function formatMessage ({ message, start, end, filename, frame }: Warning): PartialMessage {
   let location
-  if ((start != null) && (end != null)) {
+  if ((start != undefined) && (end != undefined)) {
     const tmp = (frame !== undefined) ? frame.length : 0
     const lineEnd = start.line === end.line ? end.column : tmp
     location = {
@@ -39,7 +39,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
     name: 'svelte',
     setup (build) {
       let cache = false
-      if (build.initialOptions.incremental != null || build.initialOptions.watch != null) {
+      if (build.initialOptions.incremental != undefined || build.initialOptions.watch != undefined) {
         // console.log('cache')
         cache = true
       } else {
@@ -52,7 +52,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
       build.onLoad({ filter: /\.svelte$/ }, async (args) => {
         if (cache && cacheMap.has(args.path)) {
           const file = cacheMap.get(args.path)
-          if ((file != null) && statSync(args.path).mtime < file.time) {
+          if ((file != undefined) && statSync(args.path).mtime < file.time) {
             return file.data
           }
         }
@@ -61,7 +61,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
         const filename = relative(process.cwd(), args.path)
 
         try {
-          if ((options?.preprocess) != null) {
+          if ((options?.preprocess) != undefined) {
             source = (await preprocess(source, options.preprocess, { filename })).code
           }
 
@@ -91,7 +91,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
 
           if (!compileOptions.css && css !== null && css.map !== null) {
             const path = args.path.replace(/\.svelte$/, '.svelte.css').replace(/\\/g, '/')
-            let includedFiles = [...source.matchAll(/import.+?(?<file>\w+.svelte)/gi)]
+            const includedFiles = [...source.matchAll(/import.+?(?<file>\w+.svelte)/gi)]
             cssMap.set(path, `:sveasy {--files: "${includedFiles.map(m => m.groups?.file).join(',')}";}\n` + css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
             contents = contents + `\nimport "${path}";`
           }
@@ -101,9 +101,10 @@ export const svelte = (options?: pluginOptions): Plugin => {
           if (cache) {
             cacheMap.set(args.path, { data, time: new Date() })
           }
+          // eslint-disable-next-line unicorn/no-array-callback-reference
           return { contents, warnings: warnings.map(formatMessage) }
-        } catch (e) {
-          return { errors: [formatMessage(e)] }
+        } catch (error) {
+          return { errors: [formatMessage(error)] }
         }
       })
 
@@ -114,7 +115,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
 
       build.onLoad({ filter: /\.svelte.css$/, namespace: 'svelte-css' }, (args) => {
         const css = cssMap.get(args.path)
-        return (css !== null) ? { contents: css, loader: 'css' } : null
+        return (css !== null) ? { contents: css, loader: 'css' } : undefined
       })
     }
   }

@@ -1,4 +1,4 @@
-import { builder, server } from './utils/index';
+import { builder, server } from './utils/index'
 
 export const main = (): void => {
   const argv = process.argv.slice(2)
