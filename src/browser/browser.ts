@@ -34,7 +34,7 @@ export function register(tagName: string, Component: any, css: string, props = [
       
       this.target = this.attachShadow({ mode: 'open' })
       let style = document.createElement('style');
-      style.innerHTML = css
+      style.textContent = css.substring(1, css.length - 1);
       // console.log(style);
       this.target.appendChild(style)
     }

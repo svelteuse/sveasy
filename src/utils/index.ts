@@ -92,7 +92,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
                 loader: 'css',
                 minify: true,
               })
-              tmpText = tmpText.replace(`"${register.groups.cssReplace}"`, "`" + minifiedCss.code + "`" )
+              tmpText = tmpText.replace(`"${register.groups.cssReplace}"`, "`" + JSON.stringify(minifiedCss.code) + "`" )
             }
           }          
         }
