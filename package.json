@@ -2,16 +2,15 @@
   "name": "sveasy",
   "version": "0.5.5",
   "homepage": "https://github.com/alexanderniebuhr/sveasy#readme",
-  "author": "Alexander Niebuhr",
+  "bugs": {
+    "url": "https://github.com/alexanderniebuhr/sveasy/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
   },
-  "bugs": {
-    "url": "https://github.com/alexanderniebuhr/sveasy/issues"
-  },
   "license": "ISC",
-  "bin": "bin/sveasy.js",
+  "author": "Alexander Niebuhr",
   "exports": {
     ".": {
       "require": "./lib/index.js",
@@ -30,6 +29,7 @@
       ]
     }
   },
+  "bin": "bin/sveasy.js",
   "files": [
     "lib/**/*",
     "bin/**/*"
@@ -38,22 +38,24 @@
     "prepublishOnly": "rimraf lib && npm run build",
     "build": "tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir lib --external node:fs --external node:path --external node:http",
     "dev": "npm run build -- --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sort": "npx sort-package-json@latest",
+    "check": "npx taze@latest major"
   },
   "dependencies": {
-    "esbuild": "0.12.14"
+    "esbuild": "0.12.17"
   },
   "devDependencies": {
-    "eslint": "7.31.0",
+    "@nbhr/utils": "0.0.29",
+    "@types/node": "16.4.10",
+    "@typescript-eslint/eslint-plugin": "4.28.5",
+    "@typescript-eslint/parser": "4.28.5",
+    "eslint": "7.32.0",
     "eslint-plugin-import": "2.23.4",
-    "eslint-plugin-optimize-regex": "1.2.1",
     "eslint-plugin-regexp": "0.13.2",
     "eslint-plugin-sonarjs": "0.9.1",
     "eslint-plugin-unicorn": "34.0.1",
-    "@typescript-eslint/eslint-plugin": "4.28.5",
-    "@typescript-eslint/parser": "4.28.5",
-    "@nbhr/utils": "0.0.29",
-    "@types/node": "16.4.6",
+    "prettier": "2.3.2",
     "rimraf": "3.0.2",
     "svelte": "3.41.0",
     "tsup": "4.12.5",

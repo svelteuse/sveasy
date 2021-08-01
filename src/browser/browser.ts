@@ -6,16 +6,16 @@ function createSlots(slots: any) {
   }
   // eslint-disable-next-line
   function createSlotFn(element: any) {
-    return function() {
+    return function () {
       return {
         c: noop,
-        m: function mount(target: any, anchor: any ) {
-          insert(target, element.cloneNode(true), anchor) 
+        m: function mount(target: any, anchor: any) {
+          insert(target, element.cloneNode(true), anchor)
         },
-        d: function destroy(detaching: any) { 
-          if (detaching && element.innerHTML){ 
+        d: function destroy(detaching: any) {
+          if (detaching && element.innerHTML) {
             detach(element)
-          } 
+          }
         },
         l: noop,
       }
@@ -24,7 +24,12 @@ function createSlots(slots: any) {
   return svelteSlots
 }
 
-export function register(tagName: string, Component: any, css: string, props = []): HTMLElement {
+export function register(
+  tagName: string,
+  Component: any,
+  css: string,
+  props = []
+): HTMLElement {
   class SvelteElement extends HTMLElement {
     target: ShadowRoot
     instance: any
@@ -32,10 +37,10 @@ export function register(tagName: string, Component: any, css: string, props = [
     constructor() {
       super()
       this.slotcount = 0
-      
+
       this.target = this.attachShadow({ mode: 'open' })
       const style = document.createElement('style')
-      style.textContent = css.slice(1, - 1)
+      style.textContent = css.slice(1, -1)
       // console.log(style);
       this.target.append(style)
     }
@@ -45,21 +50,22 @@ export function register(tagName: string, Component: any, css: string, props = [
       let slots
       props.$$scope = {}
       // eslint-disable-next-line
-      Array.from(this.attributes).forEach(attr => {props[attr.name] = attr.value})
+      Array.from(this.attributes).forEach((attr) => {
+        props[attr.name] = attr.value
+      })
       props.$$scope = {}
       // eslint-disable-next-line
       slots = this.getShadowSlots()
       props.$$scope = {}
       this.slotcount = Object.keys(slots).length
       props.$$slots = createSlots(slots)
-      
-      this.instance = new Component({ 
-        target: this.target,
-        props
-      })
 
+      this.instance = new Component({
+        target: this.target,
+        props,
+      })
     }
-    
+
     detachedCallback() {
       try {
         this.instance.destroy()
@@ -69,17 +75,17 @@ export function register(tagName: string, Component: any, css: string, props = [
       }
     }
 
-    getShadowSlots(){
+    getShadowSlots() {
       const namedSlots = this.querySelectorAll('[slot]')
       const slots: any = {}
       let htmlLength = this.innerHTML.length
       // eslint-disable-next-line
-      namedSlots.forEach(n=>{
+      namedSlots.forEach((n) => {
         slots[n.slot] = document.createElement('slot')
-        slots[n.slot].setAttribute('name',n.slot)
-        htmlLength-=n.outerHTML.length
+        slots[n.slot].setAttribute('name', n.slot)
+        htmlLength -= n.outerHTML.length
       })
-      if(htmlLength>0){
+      if (htmlLength > 0) {
         slots.default = document.createElement('slot')
       }
       return slots
@@ -87,11 +93,11 @@ export function register(tagName: string, Component: any, css: string, props = [
 
     attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {
       if (this.instance && newVal !== oldVal) {
-        this.instance.set({ [ attrName ]: newVal })
+        this.instance.set({ [attrName]: newVal })
       }
     }
   }
 
   customElements.define(tagName, SvelteElement)
-  return new SvelteElement
+  return new SvelteElement()
 }

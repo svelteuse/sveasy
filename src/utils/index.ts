@@ -1,23 +1,41 @@
 import { useConfig } from '@nbhr/utils'
 import { build, serve, transformSync } from 'esbuild'
-import { copyFile, copyFileSync, existsSync, mkdirSync, promises, readdirSync, readFile, rmSync, writeFileSync } from 'node:fs'
+import {
+  copyFile,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  promises,
+  readdirSync,
+  readFile,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { createServer, request, ServerResponse } from 'node:http'
 import { join } from 'node:path'
 import { svelte } from './plugins'
 
-function combineCss(tmpCss: string, cssReplace: string ) {
-  let parsedCss= ''
+function combineCss(tmpCss: string, cssReplace: string) {
+  let parsedCss = ''
   // console.log(cssReplace)
-  const regex = new RegExp(`(?<=svelte-css)[\\w/:-]+(?<fileId>${cssReplace.toLowerCase()}).*?(:sveasy.*?{.*?"(?<files>[\\w,.]+?)?".*?})\n*(?<css>.+?)(?=\\/\\*)`, 'gis')
+  const regex = new RegExp(
+    `(?<=svelte-css)[\\w/:-]+(?<fileId>${cssReplace.toLowerCase()}).*?(:sveasy.*?{.*?"(?<files>[\\w,.]+?)?".*?})\n*(?<css>.+?)(?=\\/\\*)`,
+    'gis'
+  )
   const cssMatches = [...tmpCss.matchAll(regex)]
-  if (cssMatches && cssMatches.length > 0 && cssMatches[0].groups && cssMatches[0].groups.css) {
-    parsedCss = parsedCss +  '\n' +  cssMatches[0].groups.css
+  if (
+    cssMatches &&
+    cssMatches.length > 0 &&
+    cssMatches[0].groups &&
+    cssMatches[0].groups.css
+  ) {
+    parsedCss = parsedCss + '\n' + cssMatches[0].groups.css
     if (cssMatches[0].groups.files) {
       const files = cssMatches[0].groups.files.split(',')
       console.log(`Nested Files (of ${cssReplace})`, files)
       for (const file of files) {
         const tmpFile = file + '.css'
-        parsedCss = parsedCss + '\n' + combineCss( tmpCss,tmpFile)
+        parsedCss = parsedCss + '\n' + combineCss(tmpCss, tmpFile)
       }
     }
   }
@@ -34,7 +52,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
     mkdirSync('./dist/')
   }
   console.log(options.write)
-  
+
   // build the application
   build({
     bundle: true,
@@ -43,12 +61,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
     minify: false,
     outdir: './dist',
     splitting: true,
-    target: [
-      'chrome78',
-      'firefox75',
-      'safari11',
-      'edge79'
-    ],
+    target: ['chrome78', 'firefox75', 'safari11', 'edge79'],
     write: options.write,
     // advanced
     color: true,
@@ -59,9 +72,9 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
     plugins: [
       svelte({
         compileOptions: { css: false },
-        preprocess: extractedPreprocess
-      })
-    ]
+        preprocess: extractedPreprocess,
+      }),
+    ],
   })
     .then(async (result) => {
       console.log(result)
@@ -75,12 +88,15 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
           if (file.path.includes('index.css')) {
             cssFile = file
           }
-
         }
         if (jsFile && cssFile) {
           let tmpText = jsFile.text
           const tmpCss = cssFile.text + '\n/*'
-          const registerMatches = [...jsFile.text.matchAll(/register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi)]
+          const registerMatches = [
+            ...jsFile.text.matchAll(
+              /register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi
+            ),
+          ]
           for (const register of registerMatches) {
             if (register.groups && register.groups.cssReplace) {
               const finalCss = combineCss(tmpCss, register.groups.cssReplace)
@@ -88,9 +104,11 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
                 loader: 'css',
                 minify: true,
               })
-              tmpText = tmpText.replace(`"${register.groups.cssReplace}"`, '`' + JSON.stringify(minifiedCss.code) + '`' )
-              
-            }          
+              tmpText = tmpText.replace(
+                `"${register.groups.cssReplace}"`,
+                '`' + JSON.stringify(minifiedCss.code) + '`'
+              )
+            }
           }
           writeFileSync(jsFile.path, tmpText, 'utf8')
         }
@@ -105,8 +123,6 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
       } catch (error) {
         console.log(error)
       }
-    
-    
     })
     .catch((error) => {
       console.error(error)
@@ -132,47 +148,46 @@ export const server = async (): Promise<void> => {
         }
       })
     }
-  } catch (error){
+  } catch (error) {
     throw new Error(error)
   }
 
   const clients: ServerResponse[] = []
   build({
-    target: [
-      'chrome78',
-      'firefox75',
-      'safari11',
-      'edge79'
-    ],
+    target: ['chrome78', 'firefox75', 'safari11', 'edge79'],
     entryPoints: ['src/index.js'],
     bundle: true,
     incremental: true,
     sourcemap: 'inline',
     outdir: './.sveasy',
-    banner: { js: ' (() => new EventSource("/esbuild").onmessage = (e) => location.reload())();' },
+    banner: {
+      js: ' (() => new EventSource("/esbuild").onmessage = (e) => location.reload())();',
+    },
     watch: {
-      onRebuild (error) {
+      onRebuild(error) {
         if (error != undefined) console.error('watch build failed:', error)
-        for (const res of clients)  res.write('data: update\n\n')
+        for (const res of clients) res.write('data: update\n\n')
         clients.length = 0
-      }
+      },
     },
     plugins: [
       svelte({
         compileOptions: { css: false, dev: true },
-        preprocess: extractedPreprocess
-      })
-    ]
+        preprocess: extractedPreprocess,
+      }),
+    ],
+  }).catch((error) => {
+    console.error(error)
+    throw new Error(error)
   })
-    .catch((error) => {
-      console.error(error)
-      throw new Error(error)
-    })
 
-  serve({
-    port: 8000,
-    servedir: '.sveasy'
-  }, {})
+  serve(
+    {
+      port: 8000,
+      servedir: '.sveasy',
+    },
+    {}
+  )
     .then((result) => {
       const { port } = result
       createServer((req, res) => {
@@ -183,34 +198,39 @@ export const server = async (): Promise<void> => {
             res.writeHead(200, {
               'Content-Type': 'text/event-stream',
               'Cache-Control': 'no-cache',
-              Connection: 'keep-alive'
+              Connection: 'keep-alive',
             })
           )
         }
         const path = url
         req.pipe(
-          request({ hostname: '0.0.0.0', port: port, path, method, headers }, (prxRes) => {
-            if (prxRes.statusCode === 404) {
-              readFile('./.sveasy/index.html', function (error, content) {
-                if (error != undefined) throw error
-                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
-                res.end(content, 'utf-8')
-              })
-            } else if (prxRes.statusCode !== undefined) {
-              res.writeHead(prxRes.statusCode, prxRes.headers)
-              prxRes.pipe(res, { end: true })
+          request(
+            { hostname: '0.0.0.0', port: port, path, method, headers },
+            (prxRes) => {
+              if (prxRes.statusCode === 404) {
+                readFile('./.sveasy/index.html', function (error, content) {
+                  if (error != undefined) throw error
+                  res.writeHead(200, {
+                    'Content-Type': 'text/html; charset=utf-8',
+                  })
+                  res.end(content, 'utf-8')
+                })
+              } else if (prxRes.statusCode !== undefined) {
+                res.writeHead(prxRes.statusCode, prxRes.headers)
+                prxRes.pipe(res, { end: true })
+              }
             }
-          }),
+          ),
           { end: true }
         )
       }).listen(8080)
       process.on('SIGINT', function () {
         rmSync('.sveasy', { recursive: true })
         process.exit()
-      // clients.length = 0
-      // result.stop()
-      // setTimeout(() => {
-      // }, 500)
+        // clients.length = 0
+        // result.stop()
+        // setTimeout(() => {
+        // }, 500)
       })
     })
     .catch((error) => {
