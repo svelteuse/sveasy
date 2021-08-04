@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { detach, insert, noop } from 'svelte/internal'
 function createSlots(slots: any) {
   const svelteSlots: any = {}
@@ -28,12 +30,13 @@ export function register(
   tagName: string,
   Component: any,
   css: string,
-  props = []
+  props: any = []
 ): HTMLElement {
   class SvelteElement extends HTMLElement {
-    target: ShadowRoot
-    instance: any
-    slotcount: number
+    static get observedAttributes() {
+      return props
+    }
+
     constructor() {
       super()
       this.slotcount = 0
@@ -41,7 +44,6 @@ export function register(
       this.target = this.attachShadow({ mode: 'open' })
       const style = document.createElement('style')
       style.textContent = css.slice(1, -1)
-      // console.log(style);
       this.target.append(style)
     }
 
@@ -59,19 +61,26 @@ export function register(
       props.$$scope = {}
       this.slotcount = Object.keys(slots).length
       props.$$slots = createSlots(slots)
-
       this.instance = new Component({
         target: this.target,
         props,
       })
     }
 
-    detachedCallback() {
+    disconnectedCallback() {
       try {
         this.instance.destroy()
         this.instance = undefined
       } catch (error) {
         console.log(error)
+      }
+    }
+
+    attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {
+      console.log(attrName, oldVal, '->', newVal)
+      console.log(this.instance)
+      if (this.instance && newVal !== oldVal) {
+        this.instance[attrName] = newVal
       }
     }
 
@@ -89,12 +98,6 @@ export function register(
         slots.default = document.createElement('slot')
       }
       return slots
-    }
-
-    attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {
-      if (this.instance && newVal !== oldVal) {
-        this.instance.set({ [attrName]: newVal })
-      }
     }
   }
 
