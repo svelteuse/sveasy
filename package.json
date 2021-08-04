@@ -43,18 +43,19 @@
     "check": "npx taze@latest major"
   },
   "dependencies": {
-    "esbuild": "0.12.17"
+    "esbuild": "0.12.17",
+    "get-port": "5.1.1"
   },
   "devDependencies": {
     "@nbhr/utils": "0.0.29",
-    "@types/node": "16.4.10",
-    "@typescript-eslint/eslint-plugin": "4.28.5",
-    "@typescript-eslint/parser": "4.28.5",
+    "@types/node": "16.4.11",
+    "@typescript-eslint/eslint-plugin": "4.29.0",
+    "@typescript-eslint/parser": "4.29.0",
     "eslint": "7.32.0",
     "eslint-plugin-import": "2.23.4",
     "eslint-plugin-regexp": "0.13.2",
     "eslint-plugin-sonarjs": "0.9.1",
-    "eslint-plugin-unicorn": "34.0.1",
+    "eslint-plugin-unicorn": "35.0.0",
     "prettier": "2.3.2",
     "rimraf": "3.0.2",
     "svelte": "3.41.0",
