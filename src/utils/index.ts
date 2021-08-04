@@ -90,7 +90,6 @@ async function handleComponents(result: BuildResult) {
           '`' + JSON.stringify(file.code) + '`'
         )
       }
-
       writeFileSync(jsFile.path, tmpText, 'utf8')
     }
   }
@@ -141,6 +140,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
     ],
   })
     .then((result) => {
+      console.log(result)
       console.time('handling custom-elemets')
       handleComponents(result)
       console.timeEnd('handling custom-elemets')
@@ -192,6 +192,8 @@ export const server = async (options: {
     watch: {
       onRebuild(error, result) {
         if (error != undefined) console.error('watch build failed:', error)
+        console.log(result)
+
         if (result) {
           console.time('handling custom-elemets')
           handleComponents(result)
@@ -208,7 +210,11 @@ export const server = async (options: {
       }),
     ],
   })
-    .then(async (result) => {})
+    .then(async (result) => {
+      console.time('handling custom-elemets')
+      handleComponents(result)
+      console.timeEnd('handling custom-elemets')
+    })
     .catch((error) => {
       console.error(error)
       throw new Error(error)

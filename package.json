@@ -43,10 +43,10 @@
     "check": "npx taze@latest major"
   },
   "dependencies": {
-    "esbuild": "0.12.17",
-    "get-port": "5.1.1"
+    "esbuild": "0.12.17"
   },
   "devDependencies": {
+    "get-port": "5.1.1",
     "@nbhr/utils": "0.0.29",
     "@types/node": "16.4.11",
     "@typescript-eslint/eslint-plugin": "4.29.0",
