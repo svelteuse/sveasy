@@ -71,7 +71,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
     metafile: false,
     plugins: [
       svelte({
-        compileOptions: { css: false },
+        compileOptions: { css: false, accessors: !options.write },
         preprocess: extractedPreprocess,
       }),
     ],
