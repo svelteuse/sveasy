@@ -69,14 +69,17 @@ export const svelte = (options?: pluginOptions): Plugin => {
         const filename = relative(process.cwd(), args.path)
 
         try {
+          console.time('preprocess')
           if (options?.preprocess != undefined) {
             source = (
               await preprocess(source, options.preprocess, { filename })
             ).code
           }
+          console.timeEnd('preprocess')
 
           const compileOptions = { css: false, ...options?.compileOptions }
 
+          console.time('compile')
           const {
             js,
             css,
@@ -101,6 +104,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
             ...compileOptions,
             filename: filename,
           })
+          console.timeEnd('compile')
           let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
           if (!compileOptions.css && css !== null && css.map !== null) {

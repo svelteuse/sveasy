@@ -8,7 +8,14 @@ export const main = (): void => {
     throw new Error('invalid arguments')
   if (argv[0] === 'dev') {
     console.log('serving in dev mode')
-    server()
+    if (argv[1] && argv[1] === '--wc') {
+      server({
+        write: false,
+        port: argv[2] ? argv[2].split('=')[1] : undefined,
+      })
+    } else {
+      server({ write: true })
+    }
   } else if (argv[0] === 'build') {
     console.log('building in prod mode')
     if (argv[1] && argv[1] === '--wc') {

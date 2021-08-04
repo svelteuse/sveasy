@@ -1,5 +1,6 @@
 import { useConfig } from '@nbhr/utils'
-import { build, serve, transformSync } from 'esbuild'
+import { build, BuildResult, serve, transform } from 'esbuild'
+import getPort from 'get-port'
 import {
   copyFile,
   copyFileSync,
@@ -17,22 +18,18 @@ import { svelte } from './plugins'
 
 function combineCss(tmpCss: string, cssReplace: string) {
   let parsedCss = ''
-  // console.log(cssReplace)
+
   const regex = new RegExp(
     `(?<=svelte-css)[\\w/:-]+(?<fileId>${cssReplace.toLowerCase()}).*?(:sveasy.*?{.*?"(?<files>[\\w,.]+?)?".*?})\n*(?<css>.+?)(?=\\/\\*)`,
-    'gis'
+    'is'
   )
-  const cssMatches = [...tmpCss.matchAll(regex)]
-  if (
-    cssMatches &&
-    cssMatches.length > 0 &&
-    cssMatches[0].groups &&
-    cssMatches[0].groups.css
-  ) {
-    parsedCss = parsedCss + '\n' + cssMatches[0].groups.css
-    if (cssMatches[0].groups.files) {
-      const files = cssMatches[0].groups.files.split(',')
-      console.log(`Nested Files (of ${cssReplace})`, files)
+  // const cssMatches = [...tmpCss.matchAll(regex)]
+  const cssMatch = tmpCss.match(regex)
+
+  if (cssMatch && cssMatch.groups && cssMatch.groups.css) {
+    parsedCss = parsedCss + '\n' + cssMatch.groups.css
+    if (cssMatch.groups.files) {
+      const files = cssMatch.groups.files.split(',')
       for (const file of files) {
         const tmpFile = file + '.css'
         parsedCss = parsedCss + '\n' + combineCss(tmpCss, tmpFile)
@@ -40,6 +37,73 @@ function combineCss(tmpCss: string, cssReplace: string) {
     }
   }
   return parsedCss
+}
+
+async function handleComponents(result: BuildResult) {
+  if (result.outputFiles && result.outputFiles.length > 0) {
+    let jsFile
+    let cssFile
+    for (const file of result.outputFiles) {
+      if (file.path.includes('index.js')) {
+        jsFile = file
+      }
+      if (file.path.includes('index.css')) {
+        cssFile = file
+      }
+    }
+
+    if (jsFile && cssFile) {
+      let tmpText = jsFile.text
+      const tmpCss = cssFile.text + '\n/*'
+
+      const registerMatches = [
+        ...jsFile.text.matchAll(
+          /register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi
+        ),
+      ]
+
+      let cssMap: Map<string, string> = new Map()
+
+      for (const register of registerMatches) {
+        if (register.groups && register.groups.cssReplace) {
+          const finalCss = combineCss(tmpCss, register.groups.cssReplace)
+
+          cssMap.set(register.groups.cssReplace, finalCss)
+        }
+      }
+
+      const data = await Promise.all(
+        Array.from(cssMap.entries()).map(async (entry) => {
+          return {
+            ...(await transform(entry[1], {
+              loader: 'css',
+              minify: true,
+            })),
+            identifier: entry[0],
+          }
+        })
+      )
+
+      for (const file of data) {
+        tmpText = tmpText.replace(
+          `"${file.identifier}"`,
+          '`' + JSON.stringify(file.code) + '`'
+        )
+      }
+
+      writeFileSync(jsFile.path, tmpText, 'utf8')
+    }
+  }
+
+  try {
+    const files = readdirSync('public')
+
+    for (const file of files) {
+      copyFileSync(`public/${file}`, `dist/${file}`)
+    }
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 export const builder = async (options: { write: boolean }): Promise<void> => {
@@ -76,53 +140,10 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
       }),
     ],
   })
-    .then(async (result) => {
-      console.log(result)
-      if (result.outputFiles && result.outputFiles.length > 0) {
-        let jsFile
-        let cssFile
-        for (const file of result.outputFiles) {
-          if (file.path.includes('index.js')) {
-            jsFile = file
-          }
-          if (file.path.includes('index.css')) {
-            cssFile = file
-          }
-        }
-        if (jsFile && cssFile) {
-          let tmpText = jsFile.text
-          const tmpCss = cssFile.text + '\n/*'
-          const registerMatches = [
-            ...jsFile.text.matchAll(
-              /register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi
-            ),
-          ]
-          for (const register of registerMatches) {
-            if (register.groups && register.groups.cssReplace) {
-              const finalCss = combineCss(tmpCss, register.groups.cssReplace)
-              const minifiedCss = transformSync(finalCss, {
-                loader: 'css',
-                minify: true,
-              })
-              tmpText = tmpText.replace(
-                `"${register.groups.cssReplace}"`,
-                '`' + JSON.stringify(minifiedCss.code) + '`'
-              )
-            }
-          }
-          writeFileSync(jsFile.path, tmpText, 'utf8')
-        }
-      }
-
-      try {
-        const files = readdirSync('public')
-        // console.log(files);
-        for (const file of files) {
-          copyFileSync(`public/${file}`, `dist/${file}`)
-        }
-      } catch (error) {
-        console.log(error)
-      }
+    .then((result) => {
+      console.time('handling custom-elemets')
+      handleComponents(result)
+      console.timeEnd('handling custom-elemets')
     })
     .catch((error) => {
       console.error(error)
@@ -131,7 +152,11 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
 }
 
 // sveasy dev
-export const server = async (): Promise<void> => {
+export const server = async (options: {
+  write: boolean
+  port?: string
+}): Promise<void> => {
+  if (options.port == undefined) options.port = '8080'
   const config = await useConfig.load('svelte.config.js')
   const extractedPreprocess = config.preprocess
 
@@ -160,30 +185,40 @@ export const server = async (): Promise<void> => {
     incremental: true,
     sourcemap: 'inline',
     outdir: './.sveasy',
+    write: options.write,
     banner: {
       js: ' (() => new EventSource("/esbuild").onmessage = (e) => location.reload())();',
     },
     watch: {
-      onRebuild(error) {
+      onRebuild(error, result) {
         if (error != undefined) console.error('watch build failed:', error)
+        if (result) {
+          console.time('handling custom-elemets')
+          handleComponents(result)
+          console.timeEnd('handling custom-elemets')
+        }
         for (const res of clients) res.write('data: update\n\n')
         clients.length = 0
       },
     },
     plugins: [
       svelte({
-        compileOptions: { css: false, dev: true },
+        compileOptions: { css: false, dev: true, accessors: !options.write },
         preprocess: extractedPreprocess,
       }),
     ],
-  }).catch((error) => {
-    console.error(error)
-    throw new Error(error)
   })
+    .then(async (result) => {})
+    .catch((error) => {
+      console.error(error)
+      throw new Error(error)
+    })
+  let internalPort = await getPort()
+  console.log(internalPort)
 
   serve(
     {
-      port: 8000,
+      port: internalPort,
       servedir: '.sveasy',
     },
     {}
@@ -223,7 +258,7 @@ export const server = async (): Promise<void> => {
           ),
           { end: true }
         )
-      }).listen(8080)
+      }).listen(parseInt(options.port!))
       process.on('SIGINT', function () {
         rmSync('.sveasy', { recursive: true })
         process.exit()
