@@ -20,9 +20,10 @@ function combineCss(tmpCss: string, cssReplace: string) {
   let parsedCss = ''
 
   const regex = new RegExp(
-    `(?<=svelte-css)[\\w/:-]+(?<fileId>${cssReplace.toLowerCase()}).*?(:sveasy.*?{.*?"(?<files>[\\w,.]+?)?".*?})\n*(?<css>.+?)(?=\\/\\*)`,
+    `(?<=svelte-css)[\\w/:-]+(?<fileId>\\/${cssReplace.toLowerCase()}).*?(:sveasy.*?{.*?"(?<files>[\\w,.]+?)?".*?})\n*(?<css>.+?)(?=\\/\\*\\s?svelte-css)`,
     'is'
   )
+  // console.log(regex)
   // const cssMatches = [...tmpCss.matchAll(regex)]
   const cssMatch = tmpCss.match(regex)
 
@@ -54,7 +55,7 @@ async function handleComponents(result: BuildResult) {
 
     if (jsFile && cssFile) {
       let tmpText = jsFile.text
-      const tmpCss = cssFile.text + '\n/*'
+      const tmpCss = cssFile.text + '\n/* svelte-css:INJECTED_END'
 
       const registerMatches = [
         ...jsFile.text.matchAll(
