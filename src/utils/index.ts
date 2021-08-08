@@ -40,7 +40,7 @@ function combineCss(tmpCss: string, cssReplace: string) {
   return parsedCss
 }
 
-async function handleComponents(result: BuildResult) {
+async function handleComponents(result: BuildResult, outDir: string) {
   if (result.outputFiles && result.outputFiles.length > 0) {
     let jsFile
     let cssFile
@@ -99,7 +99,7 @@ async function handleComponents(result: BuildResult) {
     const files = readdirSync('public')
 
     for (const file of files) {
-      copyFileSync(`public/${file}`, `dist/${file}`)
+      copyFileSync(`public/${file}`, `${outDir}/${file}`)
     }
   } catch (error) {
     console.log(error)
@@ -143,7 +143,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
     .then((result) => {
       console.log(result)
       console.time('handling custom-elemets')
-      handleComponents(result)
+      handleComponents(result, 'dist')
       console.timeEnd('handling custom-elemets')
     })
     .catch((error) => {
@@ -197,7 +197,7 @@ export const server = async (options: {
 
         if (result) {
           console.time('handling custom-elemets')
-          handleComponents(result)
+          handleComponents(result, '.sveasy')
           console.timeEnd('handling custom-elemets')
         }
         for (const res of clients) res.write('data: update\n\n')
@@ -213,7 +213,7 @@ export const server = async (options: {
   })
     .then(async (result) => {
       console.time('handling custom-elemets')
-      handleComponents(result)
+      handleComponents(result, '.sveasy')
       console.timeEnd('handling custom-elemets')
     })
     .catch((error) => {
