@@ -403,11 +403,12 @@ export const server = async (options: {
       onRebuild(error, result) {
         if (error != undefined) console.error('watch build failed:', error)
         console.log(result)
-
-        if (result) {
-          console.time('handling custom-elemets')
-          handleComponents(result, '.sveasy')
-          console.timeEnd('handling custom-elemets')
+        if (options.write === true) {
+          if (result) {
+            console.time('handling custom-elemets')
+            handleComponents(result, '.sveasy')
+            console.timeEnd('handling custom-elemets')
+          }
         }
         for (const res of clients) res.write('data: update\n\n')
         clients.length = 0
