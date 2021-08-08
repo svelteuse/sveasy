@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import { detach, insert, noop } from 'svelte/internal'
 function createSlots(slots: any) {
   const svelteSlots: any = {}
@@ -39,38 +38,43 @@ export function register(
 
     constructor() {
       super()
-      this.slotcount = 0
+      // console.log('construct', this)
 
       this.target = this.attachShadow({ mode: 'open' })
       const style = document.createElement('style')
       style.textContent = css.slice(1, -1)
       this.target.append(style)
+
+      this.slotcount = 0
     }
 
     connectedCallback() {
-      const props: any = {}
-      let slots
-      props.$$scope = {}
-      // eslint-disable-next-line
-      Array.from(this.attributes).forEach((attr) => {
-        props[attr.name] = attr.value
-      })
-      props.$$scope = {}
-      // eslint-disable-next-line
-      slots = this.getShadowSlots()
-      props.$$scope = {}
-      this.slotcount = Object.keys(slots).length
-      props.$$slots = createSlots(slots)
-      this.instance = new Component({
-        target: this.target,
-        props,
-      })
+      setTimeout(() => {
+        // console.log('connected', this)
+        const props: any = {}
+        let slots
+        props.$$scope = {}
+        // eslint-disable-next-line
+        Array.from(this.attributes).forEach((attr) => {
+          props[attr.name] = attr.value
+        })
+        // console.log(props)
+        // console.log(this.innerHTML)
+        slots = this.getShadowSlots()
+        this.slotcount = Object.keys(slots).length
+        props.$$slots = createSlots(slots)
+        this.instance = new Component({
+          target: this.target,
+          props,
+        })
+      }, 1)
     }
 
     disconnectedCallback() {
+      // console.log('disconnected', this)
       try {
-        this.instance.destroy()
-        this.instance = undefined
+        this.instance.$destroy()
+        // this.slotcount = 0
       } catch (error) {
         console.log(error)
       }
