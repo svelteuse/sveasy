@@ -312,7 +312,10 @@ async function handleComponents(result: BuildResult, outDir: string) {
   }
 }
 
-export const builder = async (options: { write: boolean }): Promise<void> => {
+export const builder = async (options: {
+  write: boolean
+  type: string
+}): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
   const config = await useConfig.load('svelte.config.js')
   const extractedPreprocess = config.preprocess
@@ -321,7 +324,6 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
   if (!existsSync('./dist/')) {
     mkdirSync('./dist/')
   }
-  console.log(options.write)
 
   // build the application
   build({
@@ -348,9 +350,11 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
   })
     .then((result) => {
       console.log(result)
-      console.time('handling custom-elemets')
-      handleComponents(result, 'dist')
-      console.timeEnd('handling custom-elemets')
+      if (options.type == 'webcomponents') {
+        console.time('handling custom-elemets')
+        handleComponents(result, 'dist')
+        console.timeEnd('handling custom-elemets')
+      }
     })
     .catch((error) => {
       console.error(error)
@@ -361,6 +365,7 @@ export const builder = async (options: { write: boolean }): Promise<void> => {
 // sveasy dev
 export const server = async (options: {
   write: boolean
+  type: string
   port?: string
 }): Promise<void> => {
   if (options.port == undefined) options.port = '8080'
@@ -400,7 +405,7 @@ export const server = async (options: {
       onRebuild(error, result) {
         if (error != undefined) console.error('watch build failed:', error)
         console.log(result)
-        if (options.write === true) {
+        if (options.type == 'webcomponents') {
           if (result) {
             console.time('handling custom-elemets')
             handleComponents(result, '.sveasy')
@@ -419,9 +424,11 @@ export const server = async (options: {
     ],
   })
     .then(async (result) => {
-      console.time('handling custom-elemets')
-      handleComponents(result, '.sveasy')
-      console.timeEnd('handling custom-elemets')
+      if (options.type == 'webcomponents') {
+        console.time('handling custom-elemets')
+        handleComponents(result, '.sveasy')
+        console.timeEnd('handling custom-elemets')
+      }
     })
     .catch((error) => {
       console.error(error)
