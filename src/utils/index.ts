@@ -294,10 +294,7 @@ async function handleComponents(result: BuildResult, outDir: string) {
       for (const file of data) {
         tmpText = tmpText.replace(
           `"${file.identifier}"`,
-          '`' +
-            JSON.stringify(preflights.code) +
-            JSON.stringify(file.code) +
-            '`'
+          '`' + JSON.stringify(preflights.code + file.code) + '`'
         )
       }
       writeFileSync(jsFile.path, tmpText, 'utf8')
