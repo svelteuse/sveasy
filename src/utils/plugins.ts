@@ -112,7 +112,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
               .replace(/\.svelte$/, '.svelte.css')
               .replace(/\\/g, '/')
             const includedFiles = [
-              ...source.matchAll(/import.+?(?<file>\w+.svelte)/gi),
+              ...source.matchAll(/import.+?(?<file>\w+\.svelte)/gi),
             ]
             cssMap.set(
               path,
