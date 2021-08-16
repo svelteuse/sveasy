@@ -354,6 +354,16 @@ export const builder = async (options: {
         console.time('handling custom-elemets')
         handleComponents(result, 'dist')
         console.timeEnd('handling custom-elemets')
+      } else {
+        try {
+          const files = readdirSync('public')
+
+          for (const file of files) {
+            copyFileSync(`public/${file}`, `dist/${file}`)
+          }
+        } catch (error) {
+          console.log(error)
+        }
       }
     })
     .catch((error) => {
@@ -391,7 +401,6 @@ export const server = async (options: {
 
   const clients: ServerResponse[] = []
   build({
-    target: ['chrome78', 'firefox75', 'safari11', 'edge79'],
     entryPoints: ['src/index.js'],
     bundle: true,
     incremental: true,
@@ -411,7 +420,18 @@ export const server = async (options: {
             handleComponents(result, '.sveasy')
             console.timeEnd('handling custom-elemets')
           }
+        } else {
+          try {
+            const files = readdirSync('public')
+
+            for (const file of files) {
+              copyFileSync(`public/${file}`, `.sveasy/${file}`)
+            }
+          } catch (error) {
+            console.log(error)
+          }
         }
+
         for (const res of clients) res.write('data: update\n\n')
         clients.length = 0
       },
@@ -448,6 +468,7 @@ export const server = async (options: {
       const { port } = result
       createServer((req, res) => {
         const { url, method, headers } = req
+        console.log(url)
         // TODO: UNDERSTAND
         if (url === '/esbuild') {
           return clients.push(
