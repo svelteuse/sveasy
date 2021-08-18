@@ -333,7 +333,7 @@ export const builder = async (options: {
     minify: false,
     outdir: './dist',
     splitting: true,
-    target: ['chrome78', 'firefox75', 'safari11', 'edge79'],
+    target: ['chrome89', 'firefox87', 'safari13', 'edge89'],
     write: options.write,
     // advanced
     color: true,
