@@ -43,7 +43,7 @@
     "check": "npx taze@latest major"
   },
   "dependencies": {
-    "esbuild": "0.12.19"
+    "esbuild": "0.12.21"
   },
   "devDependencies": {
     "@nbhr/utils": "0.0.29",
