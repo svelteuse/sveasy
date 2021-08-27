@@ -24,7 +24,7 @@
   "types": "./lib/index.d.ts",
   "typesVersions": {
     "*": {
-      "node": [
+      "browser": [
         "./lib/browser.d.ts"
       ]
     }
