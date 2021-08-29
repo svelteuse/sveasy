@@ -29,7 +29,8 @@ export function register(
   tagName: string,
   Component: any,
   css: string,
-  props: any = []
+  dynamicAttributes: String[] = [],
+  props: String[] = []
 ): HTMLElement {
   class SvelteElement extends HTMLElement {
     static get observedAttributes() {
@@ -40,41 +41,66 @@ export function register(
       super()
       // console.log('construct', this)
 
-      this.target = this.attachShadow({ mode: 'open' })
-      const style = document.createElement('style')
-      style.textContent = css.slice(1, -1)
-      this.target.append(style)
+      for (const prop of props) {
+        this[prop] = undefined
+      }
 
-      this.slotcount = 0
+      this.attachShadow({ mode: 'open' })
+      const rootStyle = document.createElement('style')
+      rootStyle.textContent = css.slice(1, -1)
+      this.shadowRoot.appendChild(rootStyle)
+      // this.target = this.attachShadow({ mode: 'open' })
+      // const style = document.createElement('style')
+      // style.textContent = css.slice(1, -1)
+      // this.target.append(style)
+
+      // this.slotcount = 0
     }
 
     connectedCallback() {
       setTimeout(() => {
-        // console.log('connected', this)
-        const props: any = {}
-        let slots
-        props.$$scope = {}
-        // eslint-disable-next-line
-        Array.from(this.attributes).forEach((attr) => {
-          props[attr.name] = attr.value
+        for (const prop of props) {
+          if (this.hasOwnProperty(prop)) {
+            let value = this[prop]
+            delete this[prop]
+            this[prop] = value
+          }
+        }
+
+        let svelteProps = {}
+        for (const prop of props) {
+          svelteProps[prop] = this[prop]
+        }
+        console.log(svelteProps)
+        this.componentInstance = new Component({
+          target: this.shadowRoot,
+          props: {
+            $$scope: {},
+            $$slots: createSlots(this.getShadowSlots()),
+            ...svelteProps,
+            ...this.attributes,
+          },
         })
-        // console.log(props)
-        // console.log(this.innerHTML)
-        slots = this.getShadowSlots()
-        this.slotcount = Object.keys(slots).length
-        props.$$slots = createSlots(slots)
-        this.instance = new Component({
-          target: this.target,
-          props,
-        })
+
+        // const props: any = {}
+        // let slots
+        // props.$$scope = {}
+        // Array.from(this.attributes).forEach((attr) => {
+        //   props[attr.name] = attr.value
+        // })
+        // slots = this.getShadowSlots()
+        // this.slotcount = Object.keys(slots).length
+        // props.$$slots = createSlots(slots)
+        // this.instance = new Component({
+        //   target: this.target,
+        //   props,
+        // })
       }, 1)
     }
 
     disconnectedCallback() {
-      // console.log('disconnected', this)
       try {
-        this.instance.$destroy()
-        // this.slotcount = 0
+        this.componentInstance.$destroy()
       } catch (error) {
         console.log(error)
       }
@@ -82,9 +108,8 @@ export function register(
 
     attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {
       console.log(attrName, oldVal, '->', newVal)
-      console.log(this.instance)
-      if (this.instance && newVal !== oldVal) {
-        this.instance[attrName] = newVal
+      if (this.componentInstance && newVal !== oldVal) {
+        this.componentInstance[attrName] = newVal
       }
     }
 
