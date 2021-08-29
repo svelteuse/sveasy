@@ -1,6 +1,6 @@
 {
   "name": "sveasy",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "homepage": "https://github.com/alexanderniebuhr/sveasy#readme",
   "bugs": {
     "url": "https://github.com/alexanderniebuhr/sveasy/issues"
@@ -43,7 +43,7 @@
     "check": "npx taze@latest major"
   },
   "dependencies": {
-    "esbuild": "0.12.19"
+    "esbuild": "0.12.24"
   },
   "devDependencies": {
     "@nbhr/utils": "0.0.29",
