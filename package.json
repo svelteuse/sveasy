@@ -43,11 +43,11 @@
     "check": "npx taze@latest major"
   },
   "dependencies": {
-    "esbuild": "0.12.19"
+    "esbuild": "0.12.24"
   },
   "devDependencies": {
     "@nbhr/utils": "0.0.29",
-    "@types/node": "16.4.13",
+    "@types/node": "16.7.6",
     "@typescript-eslint/eslint-plugin": "4.29.0",
     "@typescript-eslint/parser": "4.29.0",
     "eslint": "7.32.0",
@@ -58,11 +58,15 @@
     "get-port": "5.1.1",
     "prettier": "2.3.2",
     "rimraf": "3.0.2",
-    "svelte": "3.42.1",
+    "svelte": "3.42.4",
     "tsup": "4.13.1",
-    "typescript": "4.3.5"
+    "typescript": "4.4.2"
   },
   "engines": {
     "node": ">14.x"
+  },
+  "volta": {
+    "node": "16.8.0",
+    "npm": "7.21.1"
   }
 }
