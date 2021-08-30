@@ -71,15 +71,20 @@ export function register(
         for (const prop of props) {
           svelteProps[prop] = this[prop]
         }
-        console.log(svelteProps)
+        let customPropsObject = {
+          $$scope: {},
+          $$slots: createSlots(this.getShadowSlots()),
+          ...svelteProps,
+        }
+        Array.from(this.attributes).forEach((attr) => {
+          customPropsObject[attr.name] = attr.value
+        })
+        console.log(tagName)
+        console.log(customPropsObject)
+
         this.componentInstance = new Component({
           target: this.shadowRoot,
-          props: {
-            $$scope: {},
-            $$slots: createSlots(this.getShadowSlots()),
-            ...svelteProps,
-            ...this.attributes,
-          },
+          props: customPropsObject,
         })
 
         // const props: any = {}
