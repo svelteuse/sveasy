@@ -34,7 +34,7 @@ export function register(
 ): HTMLElement {
   class SvelteElement extends HTMLElement {
     static get observedAttributes() {
-      return props
+      return dynamicAttributes
     }
 
     constructor() {
