@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { detach, insert, noop } from 'svelte/internal'
+import { detach, insert, noop, SvelteComponent } from 'svelte/internal'
 function createSlots(slots: any) {
   const svelteSlots: any = {}
   for (const slotName in slots) {
@@ -104,11 +104,7 @@ export function register(
     }
 
     disconnectedCallback() {
-      try {
-        this.componentInstance.$destroy()
-      } catch (error) {
-        console.log(error)
-      }
+      if (this.componentInstance) this.componentInstance.$destroy()
     }
 
     attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {
