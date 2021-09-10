@@ -39,7 +39,6 @@ export function register(
 
     constructor() {
       super()
-      // console.log('construct', this)
 
       for (const prop of props) {
         this[prop] = undefined
@@ -49,12 +48,6 @@ export function register(
       const rootStyle = document.createElement('style')
       rootStyle.textContent = css.slice(1, -1)
       this.shadowRoot.appendChild(rootStyle)
-      // this.target = this.attachShadow({ mode: 'open' })
-      // const style = document.createElement('style')
-      // style.textContent = css.slice(1, -1)
-      // this.target.append(style)
-
-      // this.slotcount = 0
     }
 
     connectedCallback() {
@@ -79,27 +72,11 @@ export function register(
         Array.from(this.attributes).forEach((attr) => {
           customPropsObject[attr.name] = attr.value
         })
-        console.log(tagName)
-        console.log(customPropsObject)
 
         this.componentInstance = new Component({
           target: this.shadowRoot,
           props: customPropsObject,
         })
-
-        // const props: any = {}
-        // let slots
-        // props.$$scope = {}
-        // Array.from(this.attributes).forEach((attr) => {
-        //   props[attr.name] = attr.value
-        // })
-        // slots = this.getShadowSlots()
-        // this.slotcount = Object.keys(slots).length
-        // props.$$slots = createSlots(slots)
-        // this.instance = new Component({
-        //   target: this.target,
-        //   props,
-        // })
       }, 1)
     }
 
@@ -108,7 +85,6 @@ export function register(
     }
 
     attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {
-      console.log(attrName, oldVal, '->', newVal)
       if (this.componentInstance && newVal !== oldVal) {
         this.componentInstance[attrName] = newVal
       }
