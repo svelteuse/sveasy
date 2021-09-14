@@ -330,7 +330,7 @@ export const builder = async (options: {
     bundle: true,
     entryPoints: ['src/index.js'],
     format: 'esm',
-    minify: false,
+    minify: true,
     outdir: './dist',
     splitting: true,
     target: ['chrome89', 'firefox87', 'safari13', 'edge89'],
