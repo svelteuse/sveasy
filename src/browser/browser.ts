@@ -41,7 +41,15 @@ export function register(
       super()
 
       for (const prop of props) {
-        this[prop] = undefined
+        Object.defineProperty(this, prop, {
+          get: function () {
+            return this['_' + prop]
+          },
+          set: function (x) {
+            this['_' + prop] = x
+            if (this.componentInstance) this.componentInstance[prop] = x
+          },
+        })
       }
 
       this.attachShadow({ mode: 'open' })
@@ -52,14 +60,6 @@ export function register(
 
     connectedCallback() {
       setTimeout(() => {
-        for (const prop of props) {
-          if (this.hasOwnProperty(prop)) {
-            let value = this[prop]
-            delete this[prop]
-            this[prop] = value
-          }
-        }
-
         let svelteProps = {}
         for (const prop of props) {
           svelteProps[prop] = this[prop]
