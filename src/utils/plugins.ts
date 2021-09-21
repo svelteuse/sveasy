@@ -129,7 +129,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
           // eslint-disable-next-line unicorn/no-array-callback-reference
           return {
             contents,
-            warnings: warnings.map(formatMessage),
+            // warnings: warnings.map(formatMessage),
           }
         } catch (error) {
           return { errors: [formatMessage(error)] }

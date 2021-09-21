@@ -122,7 +122,7 @@ export const customComponentsNext = async function (options) {
   // compile the files without bundling
   build({
     bundle: true,
-    entryPoints: ['./src/index.js', ...files],
+    entryPoints: [...files],
     format: 'esm',
     minify: false,
     outdir: './dist',
@@ -159,6 +159,8 @@ export const customComponentsNext = async function (options) {
     )
     writeFileSync(tmp.path, tmp.contents, 'utf8')
   })
+
+  copyFileSync('./src/index.js', './dist/index.js')
 }
 
 export const builder = async (options: {
