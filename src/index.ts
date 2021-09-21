@@ -1,4 +1,4 @@
-import { builder, server } from './utils/index'
+import { customComponentsNext, builder, server } from './utils/index'
 
 export const main = (): void => {
   const argv = process.argv.slice(2)
@@ -20,7 +20,7 @@ export const main = (): void => {
   } else if (argv[0] === 'build') {
     console.log('building in prod mode')
     if (argv[1] && argv[1] === '--wc') {
-      builder({ write: false, type: 'webcomponents' })
+      customComponentsNext({ write: false, type: 'webcomponents' })
     } else {
       builder({ write: true, type: 'default' })
     }

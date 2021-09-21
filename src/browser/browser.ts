@@ -28,7 +28,7 @@ function createSlots(slots: any) {
 export function register(
   tagName: string,
   Component: any,
-  css: string,
+  css: CSSStyleSheet | string,
   dynamicAttributes: String[] = [],
   props: String[] = []
 ): HTMLElement {
@@ -39,7 +39,6 @@ export function register(
 
     constructor() {
       super()
-
       for (const prop of props) {
         Object.defineProperty(this, prop, {
           get: function () {
@@ -53,9 +52,13 @@ export function register(
       }
 
       this.attachShadow({ mode: 'open' })
-      const rootStyle = document.createElement('style')
-      rootStyle.textContent = css.slice(1, -1)
-      this.shadowRoot.appendChild(rootStyle)
+      if (typeof css === 'string') {
+        const rootStyle = document.createElement('style')
+        rootStyle.textContent = css.slice(1, -1)
+        this.shadowRoot.appendChild(rootStyle)
+      } else {
+        this.shadowRoot.adoptedStyleSheets = [css]
+      }
     }
 
     connectedCallback() {

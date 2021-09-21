@@ -1,5 +1,12 @@
-import { useConfig } from '@nbhr/utils'
-import { build, BuildResult, serve, transform, transformSync } from 'esbuild'
+import { useConfig, useFs } from '@nbhr/utils'
+import {
+  build,
+  BuildResult,
+  OutputFile,
+  serve,
+  transform,
+  transformSync,
+} from 'esbuild'
 import getPort from 'get-port'
 import {
   copyFile,
@@ -13,7 +20,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { createServer, request, ServerResponse } from 'node:http'
-import { join } from 'node:path'
+import { join, relative, sep, dirname } from 'node:path'
 import { svelte } from './plugins'
 import { Processor as windi } from 'windicss/lib'
 
@@ -41,76 +48,117 @@ function combineCss(tmpCss: string, cssReplace: string) {
   return parsedCss
 }
 
-async function handleComponents(result: BuildResult, outDir: string) {
-  if (result.outputFiles && result.outputFiles.length > 0) {
-    let jsFile
-    let cssFile
-    for (const file of result.outputFiles) {
-      if (file.path.includes('index.js')) {
-        jsFile = file
-      }
-      if (file.path.includes('index.css')) {
-        cssFile = file
-      }
-    }
+async function handleComponents(
+  js: OutputFile,
+  css: OutputFile
+): Promise<OutputFile> {
+  let tmpJS = js.text
+  let tmpCss = css.text
 
-    if (jsFile && cssFile) {
-      let tmpText = jsFile.text
-      const tmpCss = cssFile.text + '\n/* svelte-css:INJECTED_END'
-
-      const registerMatches = [
-        ...jsFile.text.matchAll(
-          /register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi
-        ),
-      ]
-
-      let cssMap: Map<string, string> = new Map()
-
-      for (const register of registerMatches) {
-        if (register.groups && register.groups.cssReplace) {
-          const finalCss = combineCss(tmpCss, register.groups.cssReplace)
-
-          cssMap.set(register.groups.cssReplace, finalCss)
-        }
-      }
-
-      const data = await Promise.all(
-        Array.from(cssMap.entries()).map(async (entry) => {
-          return {
-            ...(await transform(entry[1], {
-              loader: 'css',
-              minify: true,
-            })),
-            identifier: entry[0],
-          }
-        })
-      )
-
-      let preflights = new windi().preflight().build(true)
-
-      for (const file of data) {
-        tmpText = tmpText.replace(
-          `"${file.identifier}"`,
-          '`' + JSON.stringify(preflights + file.code) + '`'
-        )
-      }
-      writeFileSync(
-        jsFile.path,
-        transformSync(tmpText, { loader: 'js', minify: true }).code,
-        'utf8'
-      )
+  const registerMatches = [
+    ...tmpJS.matchAll(
+      /register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi
+    ),
+  ]
+  let cssMap: Map<string, string> = new Map()
+  for (const match of registerMatches) {
+    if (match.groups?.cssReplace) {
+      const finalCSS = combineCss(tmpCss, match.groups.cssReplace)
+      cssMap.set(match.groups.cssReplace, finalCSS)
     }
   }
 
-  try {
-    const files = readdirSync('public')
+  const data = await Promise.all(
+    Array.from(cssMap.entries()).map(async (entry) => {
+      return {
+        ...(await transform(entry[1], {
+          loader: 'css',
+          minify: false,
+        })),
+        identifier: entry[0],
+      }
+    })
+  )
 
-    for (const file of files) {
-      copyFileSync(`public/${file}`, `${outDir}/${file}`)
-    }
-  } catch (error) {
-    console.log(error)
+  let preflights = new windi().preflight().build(true)
+
+  for (const file of data) {
+    tmpJS = tmpJS.replace(
+      `"${file.identifier}"`,
+      '`' + JSON.stringify(preflights + file.code) + '`'
+    )
   }
+
+  let out = {
+    path: js.path,
+    contents: Buffer.from(
+      transformSync(tmpJS, { loader: 'js', minify: false }).code
+    ),
+    get text() {
+      return this.contents.toString()
+    },
+  }
+  return out
+}
+
+export const customComponentsNext = async function (options) {
+  // glob svelte.config.{js,cjs,mjs}
+  const config = await useConfig.load('svelte.config.js')
+  const extractedPreprocess = config.preprocess
+
+  // check if directory dist extists, otherwise create it
+  if (!existsSync('dist')) {
+    mkdirSync('dist')
+  }
+
+  let root = './'
+  // glob for all js files in src directory
+  const files = useFs
+    .walkSync(root + 'src/components')
+    .map((path) => relative(root, path))
+    .filter((path) => path.endsWith('.js'))
+    .map((path) => path.replaceAll(sep, '/'))
+
+  // compile the files without bundling
+  build({
+    bundle: true,
+    entryPoints: ['./src/index.js', ...files],
+    format: 'esm',
+    minify: false,
+    outdir: './dist',
+    splitting: true,
+    write: true,
+    target: ['chrome91', 'edge91', 'firefox89', 'safari14'],
+    plugins: [
+      svelte({
+        compileOptions: { css: false, accessors: !options.write },
+        preprocess: extractedPreprocess,
+      }),
+    ],
+  })
+
+  build({
+    bundle: true,
+    entryPoints: ['./src/legacy.js'],
+    format: 'esm',
+    minify: false,
+    outdir: './dist',
+    splitting: false,
+    write: false,
+    target: ['chrome91', 'edge91', 'firefox89', 'safari14'],
+    plugins: [
+      svelte({
+        compileOptions: { css: false, accessors: !options.write },
+        preprocess: extractedPreprocess,
+      }),
+    ],
+  }).then(async (result) => {
+    let tmp = await handleComponents(
+      result.outputFiles.find((file) => file.path.endsWith('legacy.js'))!,
+      result.outputFiles.find((file) => file.path.endsWith('legacy.css'))!
+    )
+    writeFileSync(tmp.path, tmp.contents, 'utf8')
+  })
 }
 
 export const builder = async (options: {
@@ -131,8 +179,7 @@ export const builder = async (options: {
     bundle: true,
     entryPoints: ['src/index.js'],
     format: 'esm',
-    minifyWhitespace: options.write,
-    minifyIdentifiers: options.write,
+    minify: options.write,
     outdir: './dist',
     splitting: true,
     target: ['chrome89', 'firefox87', 'safari13', 'edge89'],
