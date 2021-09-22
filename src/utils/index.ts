@@ -60,6 +60,7 @@ async function handleComponents(
       /register\((["'`])(?<tagName>[\w-]+)\1\s*,\s*(?<component>\w+)\s*,\s*(["'`])(?<cssReplace>[\w.]+)\4/gi
     ),
   ]
+  tmpCss += '\n/* svelte-css:INJECTED_END'
   let cssMap: Map<string, string> = new Map()
   for (const match of registerMatches) {
     if (match.groups?.cssReplace) {
