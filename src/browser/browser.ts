@@ -28,7 +28,7 @@ function createSlots(slots: any) {
 export function register(
   tagName: string,
   Component: any,
-  css: CSSStyleSheet | string,
+  css: CSSStyleSheet[] | string,
   dynamicAttributes: String[] = [],
   props: String[] = []
 ): HTMLElement {
@@ -57,7 +57,7 @@ export function register(
         rootStyle.textContent = css.slice(1, -1)
         this.shadowRoot.appendChild(rootStyle)
       } else {
-        this.shadowRoot.adoptedStyleSheets = [css]
+        this.shadowRoot.adoptedStyleSheets = css
       }
     }
 
