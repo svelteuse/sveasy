@@ -81,8 +81,8 @@ async function handleComponents(
     })
   )
 
-  let preflights = new windi().preflight().build(true)
-
+  let preflights = new windi().preflight().build(false)
+  writeFileSync('dist/preflights.css', preflights)
   for (const file of data) {
     tmpJS = tmpJS.replace(
       `"${file.identifier}"`,
