@@ -1,13 +1,13 @@
 {
   "name": "sveasy",
   "version": "0.7.3",
-  "homepage": "https://github.com/alexanderniebuhr/sveasy#readme",
+  "homepage": "https://github.com/svelteuse/sveasy#readme",
   "bugs": {
-    "url": "https://github.com/alexanderniebuhr/sveasy/issues"
+    "url": "https://github.com/svelteuse/sveasy/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
+    "url": "git+https://github.com/svelteuse/sveasy.git"
   },
   "license": "ISC",
   "author": {
