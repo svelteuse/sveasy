@@ -41,7 +41,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "esbuild": "0.12.24"
+    "esbuild": "0.13.3"
   },
   "devDependencies": {
     "@nbhr/utils": "0.0.29",
