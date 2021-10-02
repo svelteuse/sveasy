@@ -1,31 +1,43 @@
 import { customComponentsNext, builder, server } from './utils/index'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
-export const main = (): void => {
-  const argv = process.argv.slice(2)
-  console.log(argv)
-  if (!argv[0]) throw new Error('invalid arguments')
-  if (argv[0] !== 'dev' && argv[0] !== 'build')
-    throw new Error('invalid arguments')
-  if (argv[0] === 'dev') {
-    console.log('serving in dev mode')
-    if (argv[1] && argv[1] === '--wc') {
-      server({
-        write: false,
-        type: 'webcomponents',
-        port: argv[2] ? argv[2].split('=')[1] : undefined,
-      })
-    } else {
-      server({ write: true, type: 'default' })
-    }
-  } else if (argv[0] === 'build') {
-    console.log('building in prod mode')
-    if (argv[1] && argv[1] === '--wc') {
+const argv = yargs(hideBin(process.argv))
+  .scriptName('sveasy')
+  .usage('$0 <command> [options]')
+  .command('build', 'builds in production')
+  .command('dev', 'builds in development')
+  .option('verbose', {
+    alias: 'v',
+    describe: 'Verbose output',
+    type: 'boolean',
+  })
+  .option('custom-elements', {
+    alias: 'ce',
+    describe: 'Custom elements',
+    type: 'boolean',
+  })
+  .help('h')
+  .alias('h', 'help')
+  .demandCommand(1, 'You need at least one command before moving on')
+  .parseSync()
+
+switch (argv._[0]) {
+  case 'build': {
+    // check if argv.custom-elements is true
+    if (argv.customElements) {
       customComponentsNext({ write: false, type: 'webcomponents' })
     } else {
       builder({ write: true, type: 'default' })
     }
-  } else {
-    throw new Error('unexpected error')
+    break
   }
+  case 'dev':
+    // throw error if argv.custom-elements is true
+    if (argv.customElements) {
+      throw new Error('Custom elements are not supported in dev mode')
+    } else {
+      server({ write: false, type: 'default' })
+    }
+    break
 }
-main()
