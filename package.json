@@ -10,62 +10,58 @@
     "url": "git+https://github.com/alexanderniebuhr/sveasy.git"
   },
   "license": "ISC",
-  "author": "Alexander Niebuhr",
+  "author": {
+    "name": "Alexander Niebuhr",
+    "email": "tech@nbhr.io"
+  },
   "exports": {
     ".": {
-      "require": "./lib/index.js",
-      "import": "./lib/index.mjs"
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
     },
     "./browser": {
-      "require": "./lib/browser/browser.js",
-      "import": "./lib/browser/browser.mjs"
+      "require": "./dist/browser/browser.js",
+      "import": "./dist/browser/browser.mjs"
     }
   },
-  "types": "./lib/index.d.ts",
+  "types": "./dist/index.d.ts",
   "typesVersions": {
     "*": {
       "browser": [
-        "./lib/browser.d.ts"
+        "./dist/browser.d.ts"
       ]
     }
   },
   "bin": "bin/sveasy.js",
   "files": [
-    "lib/**/*",
+    "dist/**/*",
     "bin/**/*"
   ],
   "scripts": {
     "prepublishOnly": "rimraf lib && npm run build",
-    "build": "tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir lib --external node:fs --external node:path --external node:http",
-    "dev": "npm run build -- --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir dist --external node:fs --external node:path --external node:http",
+    "dev": "npm run build -- --watch"
   },
   "dependencies": {
-    "esbuild": "0.12.24"
+    "esbuild": "0.13.3"
   },
   "devDependencies": {
+    "@alexanderniebuhr/style": "1.0.13",
     "@nbhr/utils": "0.0.29",
-    "@types/node": "16.7.6",
-    "@typescript-eslint/eslint-plugin": "4.29.0",
-    "@typescript-eslint/parser": "4.29.0",
-    "eslint": "7.32.0",
-    "eslint-plugin-import": "2.23.4",
-    "eslint-plugin-regexp": "0.13.2",
-    "eslint-plugin-sonarjs": "0.9.1",
-    "eslint-plugin-unicorn": "35.0.0",
+    "@types/node": "16.10.2",
     "get-port": "5.1.1",
-    "prettier": "2.3.2",
     "rimraf": "3.0.2",
-    "svelte": "3.42.4",
-    "tsup": "4.13.1",
-    "typescript": "4.4.2",
-    "windicss": "^3.1.7"
+    "svelte": "3.43.1",
+    "tsup": "5.2.1",
+    "typescript": "4.4.3",
+    "windicss": "3.1.8",
+    "yargs": "17.2.1"
   },
   "engines": {
     "node": ">14.x"
   },
   "volta": {
-    "node": "16.9.1",
-    "npm": "7.24.0"
+    "node": "16.10.0",
+    "npm": "7.24.1"
   }
 }
