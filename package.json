@@ -50,7 +50,7 @@
     "@nbhr/utils": "0.0.29",
     "@types/node": "16.10.2",
     "@types/yargs": "17.0.3",
-    "get-port": "5.1.1",
+    "get-port": "6.0.0",
     "rimraf": "3.0.2",
     "svelte": "3.43.1",
     "tsup": "5.2.1",
