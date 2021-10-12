@@ -38,12 +38,13 @@
     "bin/**/*"
   ],
   "scripts": {
-    "prepublishOnly": "rimraf lib && npm run build",
+    "prepublishOnly": "npm run build:clean",
+    "build:clean": "rimraf dist && tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir dist --external node:fs --external node:path --external node:http",
     "build": "tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir dist --external node:fs --external node:path --external node:http",
     "dev": "npm run build -- --watch"
   },
   "dependencies": {
-    "esbuild": "0.13.3"
+    "esbuild": "0.13.4"
   },
   "devDependencies": {
     "@alexanderniebuhr/style": "1.0.13",
@@ -62,7 +63,7 @@
     "node": ">14.x"
   },
   "volta": {
-    "node": "16.10.0",
-    "npm": "7.24.1"
+    "node": "16.11.0",
+    "npm": "8.0.0"
   }
 }
