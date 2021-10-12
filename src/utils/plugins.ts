@@ -5,13 +5,7 @@ import { compile, preprocess } from 'svelte/compiler'
 import type { CompileOptions, Warning } from 'svelte/types/compiler/interfaces'
 import { PreprocessorGroup } from 'svelte/types/compiler/preprocess/types'
 
-function formatMessage({
-  message,
-  start,
-  end,
-  filename,
-  frame,
-}: Warning): PartialMessage {
+function formatMessage({ message, start, end, filename, frame }: Warning): PartialMessage {
   let location
   if (start != undefined && end != undefined) {
     const tmp = frame !== undefined ? frame.length : 0
@@ -57,7 +51,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
       const cacheMap = new Map<string, { data: OnLoadResult; time: Date }>()
       const cssMap = new Map<string, string>()
 
-      build.onLoad({ filter: /\.svelte$/ }, async (args) => {
+      build.onLoad({ filter: /\.(svelte|svx)$/ }, async (args) => {
         if (cache && cacheMap.has(args.path)) {
           const file = cacheMap.get(args.path)
           if (file != undefined && statSync(args.path).mtime < file.time) {
@@ -70,9 +64,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
 
         try {
           if (options?.preprocess != undefined) {
-            source = (
-              await preprocess(source, options.preprocess, { filename })
-            ).code
+            source = (await preprocess(source, options.preprocess, { filename })).code
           }
 
           const compileOptions = { css: false, ...options?.compileOptions }
@@ -104,17 +96,11 @@ export const svelte = (options?: pluginOptions): Plugin => {
           let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
           if (!compileOptions.css && css !== null && css.map !== null) {
-            const path = args.path
-              .replace(/\.svelte$/, '.svelte.css')
-              .replace(/\\/g, '/')
-            const includedFiles = [
-              ...source.matchAll(/import.+?(?<file>\w+\.svelte)/gi),
-            ]
+            const path = args.path.replace(/\.svelte$/, '.svelte.css').replaceAll('\\', '/')
+            const includedFiles = [...source.matchAll(/import.+?(?<file>\w+\.svelte)/gi)]
             cssMap.set(
               path,
-              `:sveasy {--files: "${includedFiles
-                .map((m) => m.groups?.file)
-                .join(',')}";}\n` +
+              `:sveasy {--files: "${includedFiles.map((m) => m.groups?.file).join(',')}";}\n` +
                 css.code +
                 `/*# sourceMappingURL=${css.map.toUrl()}*/`
             )
@@ -141,13 +127,10 @@ export const svelte = (options?: pluginOptions): Plugin => {
         return { path: args.path, namespace: 'svelte-css' }
       })
 
-      build.onLoad(
-        { filter: /\.svelte.css$/, namespace: 'svelte-css' },
-        (args) => {
-          const css = cssMap.get(args.path)
-          return css !== null ? { contents: css, loader: 'css' } : undefined
-        }
-      )
+      build.onLoad({ filter: /\.svelte.css$/, namespace: 'svelte-css' }, (args) => {
+        const css = cssMap.get(args.path)
+        return css !== null ? { contents: css, loader: 'css' } : undefined
+      })
     },
   }
 }

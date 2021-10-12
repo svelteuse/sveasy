@@ -1,12 +1,5 @@
 import { useConfig, useFs } from '@nbhr/utils'
-import {
-  build,
-  BuildResult,
-  OutputFile,
-  serve,
-  transform,
-  transformSync,
-} from 'esbuild'
+import { build, OutputFile, serve, transform, transformSync } from 'esbuild'
 import getPort from 'get-port'
 import {
   copyFile,
@@ -20,9 +13,9 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { createServer, request, ServerResponse } from 'node:http'
-import { join, relative, sep, dirname } from 'node:path'
-import { svelte } from './plugins'
+import { join, relative, sep } from 'node:path'
 import { Processor as windi } from 'windicss/lib'
+import { svelte } from './plugins'
 
 function combineCss(tmpCss: string, cssReplace: string) {
   let parsedCss = ''
@@ -48,10 +41,7 @@ function combineCss(tmpCss: string, cssReplace: string) {
   return parsedCss
 }
 
-async function handleComponents(
-  js: OutputFile,
-  css: OutputFile
-): Promise<OutputFile> {
+async function handleComponents(js: OutputFile, css: OutputFile): Promise<OutputFile> {
   let tmpJS = js.text
   let tmpCss = css.text
 
@@ -61,7 +51,7 @@ async function handleComponents(
     ),
   ]
   tmpCss += '\n/* svelte-css:INJECTED_END'
-  let cssMap: Map<string, string> = new Map()
+  const cssMap: Map<string, string> = new Map()
   for (const match of registerMatches) {
     if (match.groups?.cssReplace) {
       const finalCSS = combineCss(tmpCss, match.groups.cssReplace)
@@ -70,7 +60,7 @@ async function handleComponents(
   }
 
   const data = await Promise.all(
-    Array.from(cssMap.entries()).map(async (entry) => {
+    [...cssMap.entries()].map(async (entry) => {
       return {
         ...(await transform(entry[1], {
           loader: 'css',
@@ -81,7 +71,7 @@ async function handleComponents(
     })
   )
 
-  let preflights = new windi().preflight().build(false)
+  const preflights = new windi().preflight().build(false)
   writeFileSync('dist/preflights.css', preflights)
   for (const file of data) {
     tmpJS = tmpJS.replace(
@@ -90,11 +80,9 @@ async function handleComponents(
     )
   }
 
-  let out = {
+  const out = {
     path: js.path,
-    contents: Buffer.from(
-      transformSync(tmpJS, { loader: 'js', minify: false }).code
-    ),
+    contents: Buffer.from(transformSync(tmpJS, { loader: 'js', minify: false }).code),
     get text() {
       return this.contents.toString()
     },
@@ -112,7 +100,7 @@ export const customComponentsNext = async function (options) {
     mkdirSync('dist')
   }
 
-  let root = './'
+  const root = './'
   // glob for all js files in src directory
   const files = useFs
     .walkSync(root + 'src/components')
@@ -154,7 +142,7 @@ export const customComponentsNext = async function (options) {
       }),
     ],
   }).then(async (result) => {
-    let tmp = await handleComponents(
+    const tmp = await handleComponents(
       result.outputFiles.find((file) => file.path.endsWith('legacy.js'))!,
       result.outputFiles.find((file) => file.path.endsWith('legacy.css'))!
     )
@@ -164,10 +152,7 @@ export const customComponentsNext = async function (options) {
   copyFileSync('./src/index.js', './dist/index.js')
 }
 
-export const builder = async (options: {
-  write: boolean
-  type: string
-}): Promise<void> => {
+export const builder = async (options: { write: boolean; type: string }): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
   const config = await useConfig.load('svelte.config.js')
   const extractedPreprocess = config.preprocess
@@ -225,11 +210,7 @@ export const builder = async (options: {
 }
 
 // sveasy dev
-export const server = async (options: {
-  write: boolean
-  type: string
-  port?: string
-}): Promise<void> => {
+export const server = async (options: { port?: string }): Promise<void> => {
   if (options.port == undefined) options.port = '8080'
   const config = await useConfig.load('svelte.config.js')
   const extractedPreprocess = config.preprocess
@@ -256,9 +237,10 @@ export const server = async (options: {
     entryPoints: ['src/index.js'],
     bundle: true,
     incremental: true,
-    sourcemap: false,
+    sourcemap: true,
+    splitting: true,
+    format: 'esm',
     outdir: './.sveasy',
-    write: options.write,
     banner: {
       js: ' (() => new EventSource("/esbuild").onmessage = (e) => location.reload())();',
     },
@@ -266,22 +248,14 @@ export const server = async (options: {
       onRebuild(error, result) {
         if (error != undefined) console.error('watch build failed:', error)
         console.log(result)
-        if (options.type == 'webcomponents') {
-          if (result) {
-            console.time('handling custom-elemets')
-            handleComponents(result, '.sveasy')
-            console.timeEnd('handling custom-elemets')
-          }
-        } else {
-          try {
-            const files = readdirSync('public')
+        try {
+          const files = readdirSync('public')
 
-            for (const file of files) {
-              copyFileSync(`public/${file}`, `.sveasy/${file}`)
-            }
-          } catch (error) {
-            console.log(error)
+          for (const file of files) {
+            copyFileSync(`public/${file}`, `.sveasy/${file}`)
           }
+        } catch (error) {
+          console.log(error)
         }
 
         for (const res of clients) res.write('data: update\n\n')
@@ -294,20 +268,12 @@ export const server = async (options: {
         preprocess: extractedPreprocess,
       }),
     ],
+  }).catch((error) => {
+    console.error(error)
+    throw new Error(error)
   })
-    .then(async (result) => {
-      if (options.type == 'webcomponents') {
-        console.time('handling custom-elemets')
-        handleComponents(result, '.sveasy')
-        console.timeEnd('handling custom-elemets')
-      }
-    })
-    .catch((error) => {
-      console.error(error)
-      throw new Error(error)
-    })
-  let internalPort = await getPort()
-  console.log(internalPort)
+  const internalPort = await getPort()
+  console.log('internal:', internalPort)
 
   serve(
     {
@@ -333,26 +299,23 @@ export const server = async (options: {
         }
         const path = url
         req.pipe(
-          request(
-            { hostname: '0.0.0.0', port: port, path, method, headers },
-            (prxRes) => {
-              if (prxRes.statusCode === 404) {
-                readFile('./.sveasy/index.html', function (error, content) {
-                  if (error != undefined) throw error
-                  res.writeHead(200, {
-                    'Content-Type': 'text/html; charset=utf-8',
-                  })
-                  res.end(content, 'utf-8')
+          request({ hostname: '0.0.0.0', port: port, path, method, headers }, (prxRes) => {
+            if (prxRes.statusCode === 404) {
+              readFile('./.sveasy/index.html', function (error, content) {
+                if (error != undefined) throw error
+                res.writeHead(200, {
+                  'Content-Type': 'text/html; charset=utf-8',
                 })
-              } else if (prxRes.statusCode !== undefined) {
-                res.writeHead(prxRes.statusCode, prxRes.headers)
-                prxRes.pipe(res, { end: true })
-              }
+                res.end(content, 'utf-8')
+              })
+            } else if (prxRes.statusCode !== undefined) {
+              res.writeHead(prxRes.statusCode, prxRes.headers)
+              prxRes.pipe(res, { end: true })
             }
-          ),
+          }),
           { end: true }
         )
-      }).listen(parseInt(options.port!))
+      }).listen(Number.parseInt(options.port!))
       process.on('SIGINT', function () {
         rmSync('.sveasy', { recursive: true })
         process.exit()

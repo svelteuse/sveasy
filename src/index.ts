@@ -37,7 +37,7 @@ switch (argv._[0]) {
     if (argv.customElements) {
       throw new Error('Custom elements are not supported in dev mode')
     } else {
-      server({ write: false, type: 'default' })
+      server({ port: '8080' })
     }
     break
 }
