@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 import { detach, insert, noop, SvelteComponent } from 'svelte/internal'
 function createSlots(slots: any) {
   const svelteSlots: any = {}
@@ -27,10 +27,10 @@ function createSlots(slots: any) {
 
 export function register(
   tagName: string,
-  Component: any,
+  Component: SvelteComponent,
   css: CSSStyleSheet[] | string,
-  dynamicAttributes: String[] = [],
-  props: String[] = []
+  dynamicAttributes: string[] = [],
+  props: string[] = []
 ): HTMLElement {
   class SvelteElement extends HTMLElement {
     static get observedAttributes() {
@@ -55,7 +55,7 @@ export function register(
       if (typeof css === 'string') {
         const rootStyle = document.createElement('style')
         rootStyle.textContent = css.slice(1, -1)
-        this.shadowRoot.appendChild(rootStyle)
+        this.shadowRoot.append(rootStyle)
       } else {
         this.shadowRoot.adoptedStyleSheets = css
       }
@@ -63,18 +63,18 @@ export function register(
 
     connectedCallback() {
       setTimeout(() => {
-        let svelteProps = {}
+        const svelteProps = {}
         for (const prop of props) {
           svelteProps[prop] = this[prop]
         }
-        let customPropsObject = {
+        const customPropsObject = {
           $$scope: {},
           $$slots: createSlots(this.getShadowSlots()),
           ...svelteProps,
         }
-        Array.from(this.attributes).forEach((attr) => {
+        for (const attr of this.attributes) {
           customPropsObject[attr.name] = attr.value
-        })
+        }
 
         this.componentInstance = new Component({
           target: this.shadowRoot,

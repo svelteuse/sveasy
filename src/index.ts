@@ -1,6 +1,8 @@
-import { customComponentsNext, builder, server } from './utils/index'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { default as handleComponent } from './utils/component'
+import { default as handleBuild } from './utils/build'
+import { default as handleServe } from './utils/serve'
 
 const argv = yargs(hideBin(process.argv))
   .scriptName('sveasy')
@@ -26,9 +28,9 @@ switch (argv._[0]) {
   case 'build': {
     // check if argv.custom-elements is true
     if (argv.customElements) {
-      customComponentsNext({ write: false, type: 'webcomponents' })
+      handleComponent({ write: false, type: 'webcomponents' })
     } else {
-      builder({ write: true, type: 'default' })
+      handleBuild({ write: true, type: 'default' })
     }
     break
   }
@@ -37,7 +39,7 @@ switch (argv._[0]) {
     if (argv.customElements) {
       throw new Error('Custom elements are not supported in dev mode')
     } else {
-      server({ port: '8080' })
+      handleServe({ port: '8080' })
     }
     break
 }

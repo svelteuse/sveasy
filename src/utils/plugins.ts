@@ -42,10 +42,10 @@ export const svelte = (options?: pluginOptions): Plugin => {
         build.initialOptions.incremental != undefined ||
         build.initialOptions.watch != undefined
       ) {
-        // console.log('cache')
+        //
         cache = true
       } else {
-        // console.log('noCache')
+        //
       }
 
       const cacheMap = new Map<string, { data: OnLoadResult; time: Date }>()
@@ -115,7 +115,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
           // eslint-disable-next-line unicorn/no-array-callback-reference
           return {
             contents,
-            // warnings: warnings.map(formatMessage),
+            warnings: warnings.map(formatMessage),
           }
         } catch (error) {
           return { errors: [formatMessage(error)] }

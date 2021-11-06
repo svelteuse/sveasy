@@ -16,54 +16,44 @@
   },
   "exports": {
     ".": {
-      "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
     "./browser": {
-      "require": "./dist/browser/browser.js",
       "import": "./dist/browser/browser.mjs"
     }
   },
   "types": "./dist/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "browser": [
-        "./dist/browser.d.ts"
-      ]
-    }
-  },
-  "bin": "bin/sveasy.js",
+  "bin": "bin/sveasy.mjs",
   "files": [
     "dist/**/*",
     "bin/**/*"
   ],
   "scripts": {
     "prepublishOnly": "npm run build:clean",
-    "build:clean": "rimraf dist && tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir dist --external node:fs --external node:path --external node:http",
-    "build": "tsup src/index.ts src/browser/browser.ts --dts --format esm,cjs --out-dir dist --external node:fs --external node:path --external node:http",
-    "dev": "npm run build -- --watch"
+    "build:clean": "rimraf dist && npm run build:node && npm run build:browser &&  npm run generate:types",
+    "build:node": "esbuild src/index.ts --external:esbuild --format=esm --platform=node --target=esnext --outfile=dist/index.mjs --bundle --minify",
+    "build:browser": "esbuild src/browser/browser.ts --format=esm --outfile=dist/browser/browser.mjs --target=chrome93,edge93 --bundle",
+    "generate:types": "tsc --emitDeclarationOnly --outFile dist/index.d.ts"
   },
   "dependencies": {
-    "esbuild": "0.13.4"
+    "esbuild": "0.13.12"
   },
   "devDependencies": {
     "@alexanderniebuhr/style": "1.0.13",
-    "@nbhr/utils": "0.0.29",
-    "@types/node": "16.10.2",
-    "@types/yargs": "17.0.3",
-    "get-port": "5.1.1",
+    "@nbhr/utils": "file:../../nbhrio/utils",
+    "@types/node": "16.11.6",
+    "@types/yargs": "17.0.5",
+    "get-port": "6.0.0",
     "rimraf": "3.0.2",
-    "svelte": "3.43.1",
-    "tsup": "5.2.1",
-    "typescript": "4.4.3",
-    "windicss": "3.1.8",
+    "svelte": "3.44.1",
+    "typescript": "4.4.4",
+    "windicss": "3.2.1",
     "yargs": "17.2.1"
   },
   "engines": {
-    "node": ">14.x"
+    "node": ">= 16"
   },
   "volta": {
-    "node": "16.11.0",
-    "npm": "8.0.0"
+    "node": "17.0.1"
   }
 }
