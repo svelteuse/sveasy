@@ -117,7 +117,7 @@ export const svelte = (options?: pluginOptions): Plugin => {
             contents,
             warnings: warnings.map(formatMessage),
           }
-        } catch (error) {
+        } catch (error: any) {
           return { errors: [formatMessage(error)] }
         }
       })
