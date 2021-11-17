@@ -33,7 +33,7 @@ export default async (options: { port?: string }): Promise<void> => {
   build({
     entryPoints: ['src/index.js'],
     bundle: true,
-    // define: define,
+    define: define,
     incremental: true,
     sourcemap: true,
     splitting: true,
