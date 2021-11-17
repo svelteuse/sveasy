@@ -1,14 +1,16 @@
-import { useConfig } from '@nbhr/utils'
+// import { useConfig } from '@nbhr/utils'
 import { cpFolderSync } from '@nbhr/utils/fs'
 import { build, serve } from 'esbuild'
 import getPort from 'get-port'
 import { copyFileSync, readdirSync, readFile, rmSync } from 'node:fs'
 import { createServer, request, ServerResponse } from 'node:http'
+import { join } from 'node:path'
+import { cwd } from 'node:process'
 import { svelte } from './plugins'
 
 export default async (options: { port?: string }): Promise<void> => {
   if (options.port == undefined) options.port = '8080'
-  const config: any = await useConfig.load('svelte.config.js')
+  const config: any = (await import(join(cwd(), 'svelte.config.js'))).default
   const extractedPreprocess = config.preprocess
 
   cpFolderSync('public', '.sveasy')
@@ -53,6 +55,7 @@ export default async (options: { port?: string }): Promise<void> => {
     plugins: [
       svelte({
         compileOptions: { css: false, dev: true, accessors: false },
+        components: false,
         preprocess: extractedPreprocess,
       }),
     ],

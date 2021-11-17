@@ -30,7 +30,7 @@ switch (argv._[0]) {
     if (argv.customElements) {
       handleComponent({ write: false, type: 'webcomponents' })
     } else {
-      handleBuild({ write: true, type: 'default' })
+      handleBuild()
     }
     break
   }

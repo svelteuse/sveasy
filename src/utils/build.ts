@@ -1,11 +1,13 @@
-import { useConfig } from '@nbhr/utils'
+// import { useConfig } from '@nbhr/utils'
 import { build, BuildResult } from 'esbuild'
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { svelte } from './plugins'
+import { join } from 'node:path'
+import { cwd } from 'node:process'
 
-export default async (options: { write: boolean; type: string }): Promise<void> => {
+export default async (): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
-  const config: any = await useConfig.load('svelte.config.js')
+  const config: any = (await import(join(cwd(), 'svelte.config.js'))).default
   const extractedPreprocess = config.preprocess
 
   // make sure the directory exists before stuff gets put into into
@@ -26,25 +28,25 @@ export default async (options: { write: boolean; type: string }): Promise<void> 
     define: define,
     entryPoints: ['src/index.js'],
     format: 'esm',
-    minify: options.write,
+    minify: true,
     outdir: './dist',
     splitting: true,
-    target: ['chrome89', 'firefox87', 'safari13', 'edge89'],
-    write: options.write,
+    target: ['chrome88', 'firefox85', 'safari14', 'edge88'],
     // advanced
     color: true,
     incremental: false,
-    legalComments: 'eof',
     logLevel: 'info',
     metafile: false,
     plugins: [
       svelte({
-        compileOptions: { css: false, accessors: !options.write },
+        compileOptions: { css: false },
+        components: false,
         preprocess: extractedPreprocess,
       }),
     ],
   })
     .then((result: BuildResult) => {
+      console.dir(result)
       try {
         const files = readdirSync('public')
 

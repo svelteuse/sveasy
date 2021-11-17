@@ -22,6 +22,7 @@ function formatMessage({ message, start, end, filename, frame }: Warning): Parti
 }
 
 interface pluginOptions {
+  components: boolean
   /**
    * Svelte compiler options
    */
@@ -96,15 +97,21 @@ export const svelte = (options?: pluginOptions): Plugin => {
           let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
           if (!compileOptions.css && css !== null && css.map !== null) {
-            const path = args.path.replace(/\.svelte$/, '.svelte.css').replaceAll('\\', '/')
-            const includedFiles = [...source.matchAll(/import.+?(?<file>\w+\.svelte)/gi)]
-            cssMap.set(
-              path,
-              `:sveasy {--files: "${includedFiles.map((m) => m.groups?.file).join(',')}";}\n` +
-                css.code +
-                `/*# sourceMappingURL=${css.map.toUrl()}*/`
-            )
-            contents = contents + `\nimport "${path}";`
+            if (options?.components) {
+              const path = args.path.replace(/\.svelte$/, '.svelte.css').replaceAll('\\', '/')
+              const includedFiles = [...source.matchAll(/import.+?(?<file>\w+\.svelte)/gi)]
+              cssMap.set(
+                path,
+                `:sveasy {--files: "${includedFiles.map((m) => m.groups?.file).join(',')}";}\n` +
+                  css.code +
+                  `/*# sourceMappingURL=${css.map.toUrl()}*/`
+              )
+              contents = contents + `\nimport "${path}";`
+            } else {
+              const path = args.path.replace(/\.svelte$/, '.svelte.css').replaceAll('\\', '/')
+              cssMap.set(path, css.code + `/*# sourceMappingURL=${css.map.toUrl()}*/`)
+              contents = contents + `\nimport "${path}";`
+            }
           }
 
           const data = { contents, warnings: warnings.map(formatMessage) }
