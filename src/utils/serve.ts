@@ -1,10 +1,10 @@
 // import { useConfig } from '@nbhr/utils'
-import { cpFolderSync } from '@nbhr/utils/fs'
+// import { cpFolderSync } from '@nbhr/utils/fs'
 import { build, serve } from 'esbuild'
 import getPort from 'get-port'
-import { copyFileSync, readdirSync, readFile, rmSync } from 'node:fs'
+import { copyFileSync, readdirSync, readFile, rmSync, existsSync, mkdirSync } from 'node:fs'
 import { createServer, request, ServerResponse } from 'node:http'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import { cwd } from 'node:process'
 import { svelte } from './plugins'
 
@@ -13,7 +13,15 @@ export default async (options: { port?: string }): Promise<void> => {
   const config: any = (await import(join(cwd(), 'svelte.config.js'))).default
   const extractedPreprocess = config.preprocess
 
-  cpFolderSync('public', '.sveasy')
+  if (!existsSync('.sveasy')) {
+    mkdirSync('.sveasy')
+  }
+  const files = readdirSync('public')
+  for (const file of files) {
+    const relativePath = relative('public', file)
+    copyFileSync(file, join('.sveasy', relativePath))
+  }
+  // cpFolderSync('public', '.sveasy')
 
   // const define: Record<string, string> = {}
 
