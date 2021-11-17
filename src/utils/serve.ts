@@ -23,12 +23,11 @@ export default async (options: { port?: string }): Promise<void> => {
   }
   // cpFolderSync('public', '.sveasy')
 
-  // const define: Record<string, string> = {}
-
-  // for (const k in process.env) {
-  //   if (!k.startsWith('SVEASY_BUILD_VAR_')) continue
-  //   define[`process.env.${k}`] = JSON.stringify(process.env[k])
-  // }
+  const define: Record<string, string> = {}
+  for (const k in process.env) {
+    if (!k.startsWith('SVEASY_BUILD_VAR_')) continue
+    define[`process.env.${k}`] = JSON.stringify(process.env[k])
+  }
 
   const clients: ServerResponse[] = []
   build({
