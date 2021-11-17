@@ -17,9 +17,9 @@ export default async (options: { port?: string }): Promise<void> => {
     mkdirSync('.sveasy')
   }
   const files = readdirSync('public')
+
   for (const file of files) {
-    const relativePath = relative('public', file)
-    copyFileSync(file, join('.sveasy', relativePath))
+    copyFileSync(`public/${file}`, `.sveasy/${file}`)
   }
   // cpFolderSync('public', '.sveasy')
 
