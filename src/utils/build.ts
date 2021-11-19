@@ -4,10 +4,13 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { svelte } from './plugins'
 import { join } from 'node:path'
 import { cwd } from 'node:process'
+import { pathToFileURL } from 'node:url'
 
 export default async (): Promise<void> => {
   // glob svelte.config.{js,cjs,mjs}
-  const config: any = (await import(join(cwd(), 'svelte.config.js'))).default
+  const filePath = pathToFileURL(join(cwd(), 'svelte.config.js')).toString()
+  const config: any = (await import(filePath)).default
+
   const extractedPreprocess = config.preprocess
 
   // make sure the directory exists before stuff gets put into into

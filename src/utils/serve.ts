@@ -6,11 +6,15 @@ import { copyFileSync, readdirSync, readFile, rmSync, existsSync, mkdirSync } fr
 import { createServer, request, ServerResponse } from 'node:http'
 import { join, relative } from 'node:path'
 import { cwd } from 'node:process'
+import { pathToFileURL } from 'node:url'
 import { svelte } from './plugins'
 
 export default async (options: { port?: string }): Promise<void> => {
   if (options.port == undefined) options.port = '8080'
-  const config: any = (await import(join(cwd(), 'svelte.config.js'))).default
+
+  const filePath = pathToFileURL(join(cwd(), 'svelte.config.js')).toString()
+  const config: any = (await import(filePath)).default
+
   const extractedPreprocess = config.preprocess
 
   if (!existsSync('.sveasy')) {

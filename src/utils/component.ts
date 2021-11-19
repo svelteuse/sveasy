@@ -5,6 +5,7 @@ import { relative, sep, join } from 'node:path'
 import { Processor as windi } from 'windicss/lib'
 import { svelte } from './plugins'
 import { cwd } from 'node:process'
+import { pathToFileURL } from 'node:url'
 
 function combineCss(tmpCss: string, cssReplace: string) {
   let parsedCss = ''
@@ -80,7 +81,8 @@ async function handleComponents(js: OutputFile, css: OutputFile): Promise<Output
 
 export default async function (options: any) {
   // glob svelte.config.{js,cjs,mjs}
-  const config: any = (await import(join(cwd(), 'svelte.config.js'))).default
+  const filePath = pathToFileURL(join(cwd(), 'svelte.config.js')).toString()
+  const config: any = (await import(filePath)).default
   const extractedPreprocess = config.preprocess
 
   // check if directory dist extists, otherwise create it
