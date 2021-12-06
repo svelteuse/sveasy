@@ -84,7 +84,11 @@ export function register(
     }
 
     disconnectedCallback() {
-      if (this.componentInstance) this.componentInstance.$destroy()
+      try {
+        this.componentInstance.$destroy()
+      } catch (error) {
+        console.info(error)
+      }
     }
 
     attributeChangedCallback(attrName: string, oldVal: string, newVal: string) {

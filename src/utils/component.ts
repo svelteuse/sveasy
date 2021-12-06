@@ -110,7 +110,7 @@ export default async function (options: any) {
     target: ['chrome91', 'edge91', 'firefox89', 'safari14'],
     plugins: [
       svelte({
-        compileOptions: { css: false, accessors: !options.write },
+        compileOptions: { css: false, accessors: true },
         components: false,
         preprocess: extractedPreprocess,
       }),
@@ -128,7 +128,7 @@ export default async function (options: any) {
     target: ['chrome91', 'edge91', 'firefox89', 'safari14'],
     plugins: [
       svelte({
-        compileOptions: { css: false, accessors: !options.write },
+        compileOptions: { css: false, accessors: true },
         components: true,
         preprocess: extractedPreprocess,
       }),
