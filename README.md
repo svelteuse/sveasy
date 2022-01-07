@@ -62,3 +62,23 @@ This project is [ISC](https://github.com/svelteuse/sveasy/blob/master/LICENSE) l
 
 ***
 _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+
+
+let examplePlugin = {
+  name: 'example',
+  setup(build) {
+    console.log(build.esbuild.version)
+    console.log(build.esbuild.transformSync('1+2'))
+  },
+}
+
+let examplePlugin = {
+  name: 'example',
+  setup(build) {
+    build.onResolve({ filter: /^example$/ }, async () => {
+      const result = await build.resolve('./foo', { resolveDir: '/bar' })
+      if (result.errors.length > 0) return result
+      return { ...result, external: true }
+    })
+  },
+}
