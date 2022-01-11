@@ -21,7 +21,7 @@ export default async (): Promise<void> => {
   const define: Record<string, string> = {}
 
   for (const k in process.env) {
-    if (!k.startsWith('SVEASY_BUILD_VAR_') || !k.startsWith('CF_PAGES_')) continue
+    if (!k.startsWith('SVEASY_BUILD_VAR_') && !k.startsWith('CF_PAGES_')) continue
     define[`process.env.${k}`] = JSON.stringify(process.env[k])
   }
 
