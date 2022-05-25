@@ -66,7 +66,7 @@ export function register(
     }
 
     connectedCallback() {
-      setTimeout(() => {
+      // setTimeout(() => {
         const svelteProps = {}
         for (const prop of props) {
           svelteProps[prop] = this[prop]
@@ -84,7 +84,7 @@ export function register(
           target: this.shadowRoot,
           props: customPropsObject,
         })
-      }, 1)
+      // }, 1)
     }
 
     disconnectedCallback() {
