@@ -35,6 +35,7 @@ export default async (): Promise<void> => {
     outdir: './dist',
     splitting: true,
     target: ['chrome88', 'firefox85', 'safari14', 'edge88'],
+    sourcemap: true,
     // advanced
     color: true,
     incremental: false,

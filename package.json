@@ -1,6 +1,6 @@
 {
   "name": "sveasy",
-  "version": "0.10.8",
+  "version": "0.11.0",
   "author": {
     "name": "Alexander Niebuhr",
     "email": "tech@nbhr.io"
@@ -10,22 +10,27 @@
     "url": "https://github.com/svelteuse/sveasy/issues"
   },
   "dependencies": {
-    "esbuild": "0.14.10"
+    "esbuild": "0.14.39"
   },
   "devDependencies": {
+    "@alexanderniebuhr/eslint-config": "1.2.0",
+    "@alexanderniebuhr/eslint-plugin": "1.2.0",
+    "@alexanderniebuhr/prettier-config": "1.2.0",
     "@alexanderniebuhr/style": "1.0.13",
     "@nbhr/utils": "0.0.30",
-    "@types/node": "17.0.8",
-    "@types/yargs": "17.0.8",
-    "get-port": "6.0.0",
+    "@types/node": "17.0.35",
+    "@types/yargs": "17.0.10",
+    "eslint": "8.16.0",
+    "fixpack": "4.0.0",
+    "get-port": "6.1.2",
     "rimraf": "3.0.2",
-    "svelte": "3.45.0",
-    "typescript": "4.5.4",
-    "windicss": "3.4.2",
-    "yargs": "17.3.1"
-  },
-  "engines": {
-    "node": ">= 16"
+    "svelte": "3.48.0",
+    "tsm": "2.2.1",
+    "tsx": "3.4.1",
+    "typescript": "4.7.2",
+    "unconfig": "0.3.4",
+    "windicss": "3.5.4",
+    "yargs": "17.5.1"
   },
   "exports": {
     ".": {
@@ -49,11 +54,11 @@
   "scripts": {
     "build:browser": "esbuild src/browser/browser.ts --format=esm --outfile=dist/browser/browser.mjs --target=chrome93,edge93 --bundle",
     "build:clean": "rimraf dist && npm run build:node && npm run build:browser &&  npm run generate:types",
-    "build:node": "esbuild src/index.ts --external:esbuild --format=esm --platform=node --target=esnext --outfile=dist/index.mjs --bundle --minify",
-    "generate:types": "tsc --emitDeclarationOnly --outFile dist/index.d.ts",
-    "prepublishOnly": "npm run build:clean"
+    "build:node": "tsx --no-cache build-node.ts",
+    "generate:types": "tsc --project src --emitDeclarationOnly --outFile dist/index.d.ts",
+    "prepublishOnly": "npm run build:clean",
+    "types:browser": "tsc --emitDeclarationOnly --declaration src/browser/browser.ts --outDir dist/browser",
+    "types:node": "tsc --emitDeclarationOnly --outFile dist/index.d.ts"
   },
-  "volta": {
-    "node": "17.3.0"
-  }
+  "type": "module"
 }

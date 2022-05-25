@@ -19,6 +19,11 @@ const argv = yargs(hideBin(process.argv))
     describe: 'Custom elements',
     type: 'boolean',
   })
+  .option("path", {
+    alias: 'p',
+    describe: 'Path to the component root folder [default: ./src/components]',
+    type: 'string',
+  })
   .help('h')
   .alias('h', 'help')
   .demandCommand(1, 'You need at least one command before moving on')
@@ -28,7 +33,7 @@ switch (argv._[0]) {
   case 'build': {
     // check if argv.custom-elements is true
     if (argv.customElements) {
-      handleComponent({ write: false, type: 'webcomponents' })
+      handleComponent({path: argv.path || "src/components" })
     } else {
       handleBuild()
     }

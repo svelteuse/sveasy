@@ -1,26 +1,25 @@
-//@ts-nocheck
 import { detach, insert, noop, SvelteComponent } from 'svelte/internal'
+
+function createSlotFn(element: any) {
+  return function () {
+    return {
+      c: noop,
+      m: function mount(target: any, anchor: any) {
+        insert(target, element.cloneNode(true), anchor)
+      },
+      d: function destroy(detaching: any) {
+        if (detaching && element.innerHTML) {
+          detach(element)
+        }
+      },
+      l: noop,
+    }
+  }
+}
 function createSlots(slots: any) {
   const svelteSlots: any = {}
   for (const slotName in slots) {
     svelteSlots[slotName] = [createSlotFn(slots[slotName])]
-  }
-  // eslint-disable-next-line
-  function createSlotFn(element: any) {
-    return function () {
-      return {
-        c: noop,
-        m: function mount(target: any, anchor: any) {
-          insert(target, element.cloneNode(true), anchor)
-        },
-        d: function destroy(detaching: any) {
-          if (detaching && element.innerHTML) {
-            detach(element)
-          }
-        },
-        l: noop,
-      }
-    }
   }
   return svelteSlots
 }
@@ -31,8 +30,10 @@ export function register(
   css: CSSStyleSheet[] | string,
   dynamicAttributes: string[] = [],
   props: string[] = []
-): HTMLElement {
+): void {
   class SvelteElement extends HTMLElement {
+    componentInstance!: SvelteComponent
+    
     static get observedAttributes() {
       return dynamicAttributes
     }
@@ -52,12 +53,15 @@ export function register(
       }
 
       this.attachShadow({ mode: 'open' })
+      if(this.shadowRoot == undefined) throw new Error("attachShadow is not supported") 
+
       if (typeof css === 'string') {
         const rootStyle = document.createElement('style')
         rootStyle.textContent = css.slice(1, -1)
         this.shadowRoot.append(rootStyle)
       } else {
-        this.shadowRoot.adoptedStyleSheets = css
+        throw new TypeError("adoptedStyleSheets is not supported")
+        // this.shadowRoot.adoptedStyleSheets = css
       }
     }
 
@@ -101,7 +105,8 @@ export function register(
       const namedSlots = this.querySelectorAll('[slot]')
       const slots: any = {}
       let htmlLength = this.innerHTML.length
-      // eslint-disable-next-line
+      
+      // eslint-disable-next-line unicorn/no-array-for-each
       namedSlots.forEach((n) => {
         slots[n.slot] = document.createElement('slot')
         slots[n.slot].setAttribute('name', n.slot)
@@ -114,6 +119,8 @@ export function register(
     }
   }
 
-  customElements.define(tagName, SvelteElement)
-  return new SvelteElement()
+  customElements.whenDefined(tagName).then((res) => {
+    if (res) return
+    customElements.define(tagName, SvelteElement)
+  })
 }
