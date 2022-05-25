@@ -65,35 +65,21 @@ export const svelte = (options?: pluginOptions): Plugin => {
 
         try {
           if (options?.preprocess != undefined) {
-            source = (await preprocess(source, options.preprocess, { filename })).code
+            const tmp = await preprocess(source, options.preprocess, { filename })
+            source = tmp.code
           }
 
-          const compileOptions = { css: false, ...options?.compileOptions }
+          const compileOptions = { ...options?.compileOptions }
 
           const {
             js,
             css,
-            warnings,
-          }: {
-            js: {
-              code: string
-              map: {
-                toString: () => string
-                toUrl: () => string
-              }
-            }
-            css: {
-              code: string
-              map: {
-                toString: () => string
-                toUrl: () => string
-              } | null
-            } | null
-            warnings: Warning[]
-          } = compile(source, {
+            warnings
+          }: any = compile(source, {
             ...compileOptions,
             filename: filename,
           })
+
           let contents = js.code + '//# sourceMappingURL=' + js.map.toUrl()
 
           if (compileOptions.css == false && css !== null && css.map !== null) {
