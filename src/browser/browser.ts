@@ -30,7 +30,7 @@ export function register(
   css: CSSStyleSheet[] | string,
   dynamicAttributes: string[] = [],
   props: string[] = []
-): void {
+): HTMLElement {
   class SvelteElement extends HTMLElement {
     componentInstance!: SvelteComponent
     
@@ -119,8 +119,12 @@ export function register(
     }
   }
 
-  customElements.whenDefined(tagName).then((res) => {
-    if (res) return
-    customElements.define(tagName, SvelteElement)
-  })
+  // customElements.whenDefined(tagName).then((res) => {
+  //   if (res) return
+  //   customElements.define(tagName, SvelteElement)
+  // })
+  customElements.define(tagName, SvelteElement)
+  
+  // return new instance of SvelteElement
+  return new SvelteElement()
 }
