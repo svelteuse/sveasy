@@ -43,7 +43,7 @@
     "dev": "npm run build -- --watch"
   },
   "dependencies": {
-    "esbuild": "0.13.3"
+    "esbuild": "0.14.48"
   },
   "devDependencies": {
     "@alexanderniebuhr/style": "1.0.13",
