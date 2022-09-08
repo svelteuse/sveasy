@@ -1,4 +1,6 @@
-import { detach, insert, noop, SvelteComponent } from 'svelte/internal'
+import { detach, insert, noop } from 'svelte/internal'
+
+import type { SvelteComponent } from 'svelte/internal'
 
 function createSlotFn(element: any) {
 	return function () {
@@ -43,7 +45,7 @@ export function props(node, properties) {
 export function register(
 	tagName: string,
 	Component: SvelteComponent,
-	css: CSSStyleSheet[] | string,
+	css: string,
 	dynamicAttributes: string[] = [],
 	props: string[] = [],
 ): HTMLElement {
@@ -52,19 +54,14 @@ export function register(
 
 		constructor() {
 			super()
-			console.log('THIS', this)
 
 			this.attachShadow({ mode: 'open' })
-			if (this.shadowRoot == undefined) throw new Error('attachShadow is not supported')
+			if (this.shadowRoot == undefined) throw new Error('.attachShadow() is not supported by the browser')
 
-			if (typeof css === 'string') {
-				const rootStyle = document.createElement('style')
-				rootStyle.textContent = css
-				this.shadowRoot.append(rootStyle)
-			} else {
-				throw new TypeError('adoptedStyleSheets is not supported')
-				// this.shadowRoot.adoptedStyleSheets = css
-			}
+			const styleTag = document.createElement('style')
+			styleTag.innerHTML = css
+
+			this.shadowRoot.append(styleTag)
 		}
 
 		static get observedAttributes() {
@@ -72,7 +69,9 @@ export function register(
 		}
 
 		connectedCallback() {
-			// setTimeout(() => {
+			// check if element is longer connected
+			this.isConnected
+
 			const svelteProps = {}
 			for (const prop of props) {
 				console.log('setting connect', prop, this[prop])
@@ -97,7 +96,7 @@ export function register(
 				target: this.shadowRoot,
 				props: customPropsObject,
 			})
-			// }, 1)
+
 		}
 
 		disconnectedCallback() {

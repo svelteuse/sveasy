@@ -1,18 +1,27 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "module": "ES2015",
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "declaration": false,
-    "esModuleInterop":true,
-    "strict": true,
-    "strictNullChecks": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "lib": [
       "dom",
-      "ES2017",
+      "ESNext",
     ],
-  }
+    "declaration": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": true,
+    "experimentalDecorators": true,
+    "esModuleInterop":true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+  },
+  "include": [
+    "*.ts"
+  ]
 }
