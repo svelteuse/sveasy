@@ -50,25 +50,9 @@ export function register(
 	class SvelteElement extends HTMLElement {
 		componentInstance!: SvelteComponent
 
-		static get observedAttributes() {
-			return dynamicAttributes
-		}
-
 		constructor() {
 			super()
 			console.log('THIS', this)
-			// for (const prop of props) {
-			//   Object.defineProperty(this, prop, {
-			//     get: function () {
-			//       return this['_' + prop]
-			//     },
-			//     set: function (x) {
-			//       console.log("setter", prop, x)
-			//       this['_' + prop] = x
-			//       if (this.componentInstance) this.componentInstance[prop] = x
-			//     },
-			//   })
-			// }
 
 			this.attachShadow({ mode: 'open' })
 			if (this.shadowRoot == undefined) throw new Error('attachShadow is not supported')
@@ -81,6 +65,10 @@ export function register(
 				throw new TypeError('adoptedStyleSheets is not supported')
 				// this.shadowRoot.adoptedStyleSheets = css
 			}
+		}
+
+		static get observedAttributes() {
+			return dynamicAttributes
 		}
 
 		connectedCallback() {
