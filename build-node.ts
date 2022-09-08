@@ -1,4 +1,4 @@
-import { type BuildOptions, build } from "esbuild";
+import { build, type BuildOptions } from 'esbuild'
 const ESM_REQUIRE_SHIM = `
 await (async () => {
   const { dirname } = await import("path");
@@ -21,29 +21,29 @@ await (async () => {
     globalThis.require = module.createRequire(import.meta.url);
   }
 })();
-`;
+`
 
 /** Whether or not you're bundling. */
-const bundle = true;
+const bundle = true
 
 /** Tell esbuild to add the shim to emitted JS. */
 const shimBanner = {
-  "js": ESM_REQUIRE_SHIM
-};
+  js: ESM_REQUIRE_SHIM,
+}
 
 /**
  * ESNext + ESM, bundle: true, and require() shim in banner.
  */
 const buildOptions: BuildOptions = {
-  entryPoints: ["./src/index.ts"],
-  external: ["esbuild"],
-  format: "esm",
-  platform: "node",
-  target: "esnext",
-  outfile: "./dist/index.mjs",
+  entryPoints: ['./src/index.ts'],
+  external: ['esbuild'],
+  format: 'esm',
+  platform: 'node',
+  target: 'esnext',
+  outfile: './dist/index.mjs',
   banner: bundle ? shimBanner : undefined,
   bundle,
-};
+}
 
 //esbuild src/index.ts --external:esbuild --format=esm --platform=node --target=esnext --outfile=dist/index.mjs --bundle --minify
-build(buildOptions);
+build(buildOptions)
