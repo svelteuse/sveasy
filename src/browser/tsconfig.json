@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": [
+      "dom",
+      "ESNext",
+    ],
+    "declaration": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": true,
+    "experimentalDecorators": true,
+    "esModuleInterop":true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+  },
+  "include": [
+    "*.ts"
+  ]
+}

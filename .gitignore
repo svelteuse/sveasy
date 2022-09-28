@@ -1,8 +1,3 @@
 node_modules
 dist
-coverage
-.idea
-*.log
-yarn.lock
-package-lock.json
-lib
+test
