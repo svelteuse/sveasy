@@ -14,28 +14,28 @@
     "svelte": "3.50.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "5.36.2",
-    "@typescript-eslint/parser": "5.36.2",
-    "eslint": "8.23.0",
+    "@nbhr/utils": "0.0.30",
+    "@types/node": "18.7.23",
+    "@types/yargs": "17.0.13",
+    "@typescript-eslint/eslint-plugin": "5.38.1",
+    "@typescript-eslint/parser": "5.38.1",
+    "esbuild": "0.15.10",
+    "eslint": "8.24.0",
     "eslint-config-standard": "17.0.0",
     "eslint-define-config": "1.7.0",
     "eslint-plugin-import": "2.26.0",
-    "eslint-plugin-n": "15.2.5",
+    "eslint-plugin-n": "15.3.0",
     "eslint-plugin-promise": "6.0.1",
     "eslint-plugin-unicorn": "43.0.2",
-    "typescript": "4.8.2",
-    "@nbhr/utils": "0.0.30",
-    "@types/node": "18.7.16",
-    "@types/yargs": "17.0.12",
     "get-port": "6.1.2",
     "rimraf": "3.0.2",
+    "svelte": "3.50.1",
     "tsm": "2.2.2",
     "tsx": "3.9.0",
+    "typescript": "4.8.4",
     "unconfig": "0.3.6",
     "windicss": "3.5.6",
-    "yargs": "17.5.1",
-    "svelte": "3.50.0",
-    "esbuild": "0.15.7"
+    "yargs": "17.5.1"
   },
   "exports": {
     ".": {
@@ -56,6 +56,7 @@
     "type": "git",
     "url": "git+https://github.com/svelteuse/sveasy.git"
   },
+  "packageManager": "pnpm@7.12.2",
   "scripts": {
     "build:browser": "esbuild src/browser/browser.ts --format=esm --outfile=dist/browser/browser.mjs --target=chrome93,edge93 --bundle",
     "build:clean": "rimraf dist && npm run build:node && npm run build:browser &&  npm run generate:types",
