@@ -26,7 +26,7 @@
     "typescript": "4.8.2",
     "@nbhr/utils": "0.0.30",
     "@types/node": "18.7.16",
-    "@types/yargs": "17.0.12",
+    "@types/yargs": "17.0.20",
     "get-port": "6.1.2",
     "rimraf": "3.0.2",
     "tsm": "2.2.2",
